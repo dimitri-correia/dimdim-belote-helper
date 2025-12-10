@@ -12,7 +12,6 @@ class JeuScreen extends StatefulWidget {
 }
 
 class _JeuScreenState extends State<JeuScreen> {
-  bool _grayerCartesJoueesJoueur = false;
   bool _afficherCartesAutresJoueurs = false;
   bool _afficherTousLesPlis = false;
 
@@ -54,56 +53,35 @@ class _JeuScreenState extends State<JeuScreen> {
 
     final estJoueurPrincipal = position == parametres.positionJoueur;
     final estTourJoueur = etatJeu.joueurActuel == parametres.positionJoueur;
+    
+    // For the main player, show ALL cards (including played ones)
+    // For other players, show remaining cards
     final cartes = estJoueurPrincipal
         ? etatJeu.cartesJoueur
         : etatJeu.getCartesJoueur(position);
 
     final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
+    
+    // For main player, combine current and played cards to show all 8 cards
+    final toutesLesCartes = estJoueurPrincipal
+        ? [...cartes, ...cartesJouees]
+        : cartes;
 
     // Group cards by color
     final cartesByCouleur = <Couleur, List<Carte>>{};
-    for (final carte in cartes) {
+    for (final carte in toutesLesCartes) {
       cartesByCouleur.putIfAbsent(carte.couleur, () => []).add(carte);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              estJoueurPrincipal ? 'Vos cartes:' : 'Cartes de ${position.nom}:',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (estJoueurPrincipal)
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _grayerCartesJoueesJoueur = !_grayerCartesJoueesJoueur;
-                  });
-                },
-                icon: Icon(
-                  _grayerCartesJoueesJoueur
-                      ? Icons.visibility_off
-                      : Icons.visibility,
-                ),
-                label: Text(
-                  _grayerCartesJoueesJoueur
-                      ? 'Montrer jouées'
-                      : 'Griser jouées',
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                ),
-              ),
-          ],
+        Text(
+          estJoueurPrincipal ? 'Vos cartes:' : 'Cartes de ${position.nom}:',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 8),
         ...Couleur.values.map((couleur) {
@@ -136,13 +114,12 @@ class _JeuScreenState extends State<JeuScreen> {
                     children: cartesCouleur.map((carte) {
                       final estJouee =
                           etatJeu.estCarteJoueeParJoueur(position, carte);
-                      final estGrisee = estJoueurPrincipal &&
-                          _grayerCartesJoueesJoueur &&
-                          estJouee;
+                      final estGrisee = estJouee;
 
                       return ElevatedButton(
-                        onPressed:
-                            estTourJoueur ? () => _jouerCarte(carte) : null,
+                        onPressed: (estTourJoueur && !estJouee)
+                            ? () => _jouerCarte(carte)
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               estGrisee ? Colors.grey.shade300 : Colors.white,
@@ -200,13 +177,102 @@ class _JeuScreenState extends State<JeuScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Game info at top
+                  // Total game points at top
+                  Card(
+                    color: Colors.purple.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Points totaux de la partie',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                children: [
+                                  Text(
+                                    'Nord-Sud',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: (parametres.positionJoueur == Position.nord ||
+                                              parametres.positionJoueur == Position.sud)
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${etatJeu.pointsTotauxNordSud}',
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Text(
+                                '—',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w300,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    'Est-Ouest',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: (parametres.positionJoueur == Position.est ||
+                                              parametres.positionJoueur == Position.ouest)
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${etatJeu.pointsTotauxEstOuest}',
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Current main points
                   Card(
                     color: Colors.blue.shade50,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Column(
                         children: [
+                          Text(
+                            'Points de cette main',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [

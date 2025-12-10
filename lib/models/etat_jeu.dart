@@ -58,6 +58,8 @@ class EtatJeu extends ChangeNotifier {
   int _nombrePlis = 0;
   int _pointsNordSud = 0;
   int _pointsEstOuest = 0;
+  int _pointsTotauxNordSud = 0; // Total points across all mains
+  int _pointsTotauxEstOuest = 0; // Total points across all mains
   List<CarteJouee> _pliActuel = [];
   Position? _premierJoueurPli; // Who played first in current pli
   List<Carte> _cartesJouees = []; // All cards played by the player
@@ -74,6 +76,8 @@ class EtatJeu extends ChangeNotifier {
   int get nombrePlis => _nombrePlis;
   int get pointsNordSud => _pointsNordSud;
   int get pointsEstOuest => _pointsEstOuest;
+  int get pointsTotauxNordSud => _pointsTotauxNordSud;
+  int get pointsTotauxEstOuest => _pointsTotauxEstOuest;
   List<CarteJouee> get pliActuel => _pliActuel;
   Position? get premierJoueurPli => _premierJoueurPli;
   List<Carte> get cartesJouees => _cartesJouees;
@@ -165,6 +169,8 @@ class EtatJeu extends ChangeNotifier {
     _nombrePlis = 0;
     _pointsNordSud = 0;
     _pointsEstOuest = 0;
+    _pointsTotauxNordSud = 0;
+    _pointsTotauxEstOuest = 0;
     _pliActuel = [];
     _premierJoueurPli = null;
     _cartesJouees = [];
@@ -341,5 +347,36 @@ class EtatJeu extends ChangeNotifier {
     // 2. Compare cards based on trump rules
     // 3. Handle suit following rules
     return _premierJoueurPli;
+  }
+
+  /// Finalize the current main and add points to totals
+  void finaliserMain() {
+    _pointsTotauxNordSud += _pointsNordSud;
+    _pointsTotauxEstOuest += _pointsEstOuest;
+    notifyListeners();
+  }
+
+  /// Start a new main (keeping totals)
+  void nouvelleMain() {
+    _nombrePlis = 0;
+    _pointsNordSud = 0;
+    _pointsEstOuest = 0;
+    _pliActuel = [];
+    _premierJoueurPli = null;
+    _cartesJouees = [];
+    _cartesParJoueur = {};
+    _cartesJoueesParJoueur = {};
+    _plisTermines = [];
+    _annonces = [];
+    
+    // Reset to first player
+    if (_parametres?.positionDonneur != null) {
+      _joueurActuel = _parametres!.sensRotation == SensRotation.horaire
+          ? _parametres!.positionDonneur!.suivant
+          : _parametres!.positionDonneur!.precedent;
+      _premierJoueurPli = _joueurActuel;
+    }
+    
+    notifyListeners();
   }
 }
