@@ -77,8 +77,18 @@ class _ParametresScreenState extends State<ParametresScreen> {
                       keyboardType: TextInputType.number,
                       onChanged: (value) {
                         final parsed = int.tryParse(value);
-                        if (parsed != null) {
-                          _valeurFin = parsed;
+                        if (parsed != null && parsed > 0) {
+                          if (_conditionFin == ConditionFin.points) {
+                            // Points should be reasonable (between 100 and 10000)
+                            if (parsed >= 100 && parsed <= 10000) {
+                              _valeurFin = parsed;
+                            }
+                          } else {
+                            // Plis should be between 1 and 50
+                            if (parsed >= 1 && parsed <= 50) {
+                              _valeurFin = parsed;
+                            }
+                          }
                         }
                       },
                     ),

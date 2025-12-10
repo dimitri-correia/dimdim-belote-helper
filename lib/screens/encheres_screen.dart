@@ -31,11 +31,17 @@ class _EncheresScreenState extends State<EncheresScreen> {
   @override
   void initState() {
     super.initState();
+    // Options will be updated in didChangeDependencies
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _mettreAJourOptions();
   }
 
   void _mettreAJourOptions() {
-    final etatJeu = context.read<EtatJeu>();
+    final etatJeu = Provider.of<EtatJeu>(context, listen: false);
     final annonces = etatJeu.annonces;
     
     if (annonces.isEmpty) {
