@@ -523,4 +523,147 @@ void main() {
       expect(etatJeu.doitTerminerEncheres, false);
     });
   });
+
+  group('Annonce Gagnante and Atout Tests', () {
+    late EtatJeu etatJeu;
+
+    setUp(() {
+      etatJeu = EtatJeu();
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.sud,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.ouest,
+      );
+      etatJeu.definirParametres(parametres);
+    });
+
+    test('Annonce gagnante - no announcements', () {
+      expect(etatJeu.annonceGagnante, isNull);
+    });
+
+    test('Annonce gagnante - only passes', () {
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+      
+      expect(etatJeu.annonceGagnante, isNull);
+    });
+
+    test('Annonce gagnante - simple prise', () {
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      final prise = Annonce(
+        joueur: Position.est,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      );
+      etatJeu.ajouterAnnonce(prise);
+      
+      expect(etatJeu.annonceGagnante, prise);
+    });
+
+    test('Annonce gagnante - prise followed by passes', () {
+      final prise = Annonce(
+        joueur: Position.nord,
+        type: TypeAnnonce.prise,
+        valeur: 90,
+        couleur: '♥ Cœur',
+      );
+      etatJeu.ajouterAnnonce(prise);
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+      
+      expect(etatJeu.annonceGagnante, prise);
+    });
+
+    test('Annonce gagnante - contre is the winning announcement', () {
+      final prise = Annonce(
+        joueur: Position.nord,
+        type: TypeAnnonce.prise,
+        valeur: 100,
+        couleur: '♦ Carreau',
+      );
+      etatJeu.ajouterAnnonce(prise);
+      
+      final contre = Annonce(joueur: Position.est, type: TypeAnnonce.contre);
+      etatJeu.ajouterAnnonce(contre);
+      
+      expect(etatJeu.annonceGagnante, contre);
+    });
+
+    test('Annonce gagnante - surcontre is the winning announcement', () {
+      final prise = Annonce(
+        joueur: Position.nord,
+        type: TypeAnnonce.prise,
+        valeur: 110,
+        couleur: '♣ Trèfle',
+      );
+      etatJeu.ajouterAnnonce(prise);
+      
+      final contre = Annonce(joueur: Position.est, type: TypeAnnonce.contre);
+      etatJeu.ajouterAnnonce(contre);
+      
+      final surcontre = Annonce(joueur: Position.sud, type: TypeAnnonce.surcontre);
+      etatJeu.ajouterAnnonce(surcontre);
+      
+      expect(etatJeu.annonceGagnante, surcontre);
+    });
+
+    test('Atout - no announcements', () {
+      expect(etatJeu.atout, isNull);
+    });
+
+    test('Atout - simple prise', () {
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.nord,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      ));
+      
+      expect(etatJeu.atout, '♠ Pique');
+    });
+
+    test('Atout - prise followed by contre', () {
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.nord,
+        type: TypeAnnonce.prise,
+        valeur: 90,
+        couleur: '♥ Cœur',
+      ));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.contre));
+      
+      // Atout should still be from the prise, not affected by contre
+      expect(etatJeu.atout, '♥ Cœur');
+    });
+
+    test('Atout - multiple prises, last one wins', () {
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.nord,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      ));
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.est,
+        type: TypeAnnonce.prise,
+        valeur: 90,
+        couleur: '♦ Carreau',
+      ));
+      
+      expect(etatJeu.atout, '♦ Carreau');
+    });
+
+    test('Atout - capot', () {
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.sud,
+        type: TypeAnnonce.prise,
+        couleur: '♣ Trèfle',
+        estCapot: true,
+      ));
+      
+      expect(etatJeu.atout, '♣ Trèfle');
+    });
+  });
 }
