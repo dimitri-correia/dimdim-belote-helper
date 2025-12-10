@@ -81,23 +81,13 @@ class EtatJeu extends ChangeNotifier {
     // If no non-pass bid yet, bidding shouldn't end
     if (dernierNonPasse == null) return false;
     
-    // Check if all announcements after the last non-pass are passes
-    bool tousPassesApres = true;
-    for (int i = indexDernierNonPasse + 1; i < _annonces.length; i++) {
-      if (_annonces[i].type != TypeAnnonce.passe) {
-        tousPassesApres = false;
-        break;
-      }
-    }
-    
-    // If not all passes after, bidding continues
-    if (!tousPassesApres) return false;
+    // Check that all announcements after the last non-pass are passes
+    // and that at least 3 consecutive passes have occurred (all other players)
+    final nombrePassesApres = _annonces.length - indexDernierNonPasse - 1;
+    if (nombrePassesApres < 3) return false;
     
     // Check if the current player is the one who made the last non-pass bid
-    // and that at least 3 consecutive passes have occurred since then
-    // (meaning all other players have passed)
-    final nombrePassesApres = _annonces.length - indexDernierNonPasse - 1;
-    return _joueurActuel == dernierNonPasse.joueur && nombrePassesApres >= 3;
+    return _joueurActuel == dernierNonPasse.joueur;
   }
 
   void definirParametres(ParametresJeu parametres) {

@@ -108,8 +108,9 @@ class _EncheresScreenState extends State<EncheresScreen> {
     
     // Check if bidding should end (last speaker's turn again with all others passed)
     if (etatJeu.doitTerminerEncheres) {
-      // Navigate to game screen automatically
-      Navigator.push(
+      // Navigate to game screen automatically, replacing current screen
+      // to prevent going back to completed bidding
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => const JeuScreen(),
