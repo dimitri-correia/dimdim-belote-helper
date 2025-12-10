@@ -104,7 +104,7 @@ class _JeuScreenState extends State<JeuScreen> {
               ] else ...[
                 // Defense wins
                 Text(
-                  '160',
+                  '${EtatJeu.pointsDefenseContratChute}',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -190,7 +190,7 @@ class _JeuScreenState extends State<JeuScreen> {
               ] else ...[
                 // Defense wins
                 Text(
-                  '160',
+                  '${EtatJeu.pointsDefenseContratChute}',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,

@@ -112,10 +112,6 @@ void main() {
       // Est plays carreau (not trump)
       etatJeu.jouerCarte(Carte(couleur: Couleur.carreau, valeur: Valeur.valet));
       
-      // Partner (Sud is on same team as Nord) plays trump 9
-      // Actually, let me set this up differently - Sud is second player
-      // Est plays, then Sud
-      
       // Sud must play trump, and can play either since no trump played yet
       expect(etatJeu.peutJouerCarte(cartes[0]), true);
       expect(etatJeu.peutJouerCarte(cartes[1]), true);

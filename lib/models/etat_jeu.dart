@@ -273,6 +273,9 @@ class EtatJeu extends ChangeNotifier {
     return 0;
   }
 
+  /// Total points available in a hand (used for defense scoring when contract fails)
+  static const int pointsDefenseContratChute = 160;
+
   /// Check if a card can be legally played based on Belote rules
   bool peutJouerCarte(Carte carte) {
     if (_joueurActuel == null || _parametres == null) return false;
@@ -627,12 +630,12 @@ class EtatJeu extends ChangeNotifier {
         pointsGagnesNordSud = 0;
       }
     } else {
-      // Contract failed - defense gets 160 + contract value
+      // Contract failed - defense gets all hand points + contract value
       if (prenantNordSud) {
-        pointsGagnesEstOuest = (160 + annonce) * mult;
+        pointsGagnesEstOuest = (pointsDefenseContratChute + annonce) * mult;
         pointsGagnesNordSud = 0;
       } else {
-        pointsGagnesNordSud = (160 + annonce) * mult;
+        pointsGagnesNordSud = (pointsDefenseContratChute + annonce) * mult;
         pointsGagnesEstOuest = 0;
       }
     }
