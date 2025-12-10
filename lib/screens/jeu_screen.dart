@@ -36,6 +36,213 @@ class _JeuScreenState extends State<JeuScreen> {
         couleur.contains('Carreau');
   }
 
+  Widget _buildPointsBreakdown(EtatJeu etatJeu) {
+    final details = etatJeu.calculerPointsDetailles();
+    final annonce = details['annonce'] as int;
+    final mult = details['multiplicateur'] as int;
+    final prenantNordSud = details['prenantNordSud'] as bool;
+    final contractReussi = details['contractReussi'] as bool;
+    final pointsMainNordSud = details['pointsMainNordSud'] as int;
+    final pointsMainEstOuest = details['pointsMainEstOuest'] as int;
+    final pointsGagnesNordSud = details['pointsGagnesNordSud'] as int;
+    final pointsGagnesEstOuest = details['pointsGagnesEstOuest'] as int;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Détails de cette main:',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        // Nord-Sud breakdown
+        Row(
+          children: [
+            Text(
+              'Nord-Sud: ',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: prenantNordSud ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            if (pointsGagnesNordSud > 0) ...[
+              if (prenantNordSud && contractReussi) ...[
+                Text(
+                  '$annonce',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                const Text(' + ', style: TextStyle(fontSize: 11)),
+                Text(
+                  '$pointsMainNordSud',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                if (mult > 1) ...[
+                  Text(' × $mult', style: const TextStyle(fontSize: 11)),
+                ],
+                Text(' = ', style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+                Text(
+                  '$pointsGagnesNordSud',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ] else ...[
+                // Defense wins
+                Text(
+                  '160',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                ),
+                const Text(' + ', style: TextStyle(fontSize: 11)),
+                Text(
+                  '$annonce',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                if (mult > 1) ...[
+                  Text(' × $mult', style: const TextStyle(fontSize: 11)),
+                ],
+                Text(' = ', style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+                Text(
+                  '$pointsGagnesNordSud',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ] else ...[
+              Text(
+                '0',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 4),
+        
+        // Est-Ouest breakdown
+        Row(
+          children: [
+            Text(
+              'Est-Ouest: ',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: !prenantNordSud ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            if (pointsGagnesEstOuest > 0) ...[
+              if (!prenantNordSud && contractReussi) ...[
+                Text(
+                  '$annonce',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                const Text(' + ', style: TextStyle(fontSize: 11)),
+                Text(
+                  '$pointsMainEstOuest',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                ),
+                if (mult > 1) ...[
+                  Text(' × $mult', style: const TextStyle(fontSize: 11)),
+                ],
+                Text(' = ', style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+                Text(
+                  '$pointsGagnesEstOuest',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                ),
+              ] else ...[
+                // Defense wins
+                Text(
+                  '160',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                const Text(' + ', style: TextStyle(fontSize: 11)),
+                Text(
+                  '$annonce',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                if (mult > 1) ...[
+                  Text(' × $mult', style: const TextStyle(fontSize: 11)),
+                ],
+                Text(' = ', style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+                Text(
+                  '$pointsGagnesEstOuest',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                ),
+              ],
+            ] else ...[
+              Text(
+                '0',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          contractReussi ? '✓ Contrat réussi' : '✗ Contrat chuté',
+          style: TextStyle(
+            fontSize: 10,
+            fontStyle: FontStyle.italic,
+            color: contractReussi ? Colors.green.shade700 : Colors.red.shade700,
+          ),
+        ),
+      ],
+    );
+  }
+
   String _obtenirOrdreJeu() {
     final etatJeu = context.read<EtatJeu>();
     final parametres = etatJeu.parametres;
@@ -99,13 +306,16 @@ class _JeuScreenState extends State<JeuScreen> {
 
       for (final carte in cartesAffichees) {
         final estJouee = etatJeu.estCarteJoueeParJoueur(position, carte);
+        final estValide = estJoueurPrincipal && estTourJoueur && !estJouee
+            ? etatJeu.peutJouerCarte(carte)
+            : false;
 
         toutesLesCartes.add(
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ElevatedButton(
-                onPressed: (estTourJoueur && !estJouee)
+                onPressed: (estTourJoueur && !estJouee && estValide)
                     ? () => _jouerCarte(carte)
                     : null,
                 style: ElevatedButton.styleFrom(
@@ -287,6 +497,13 @@ class _JeuScreenState extends State<JeuScreen> {
                               ),
                             ],
                           ),
+                          // Show detailed breakdown if main is complete
+                          if (etatJeu.nombrePlis == 8) ...[
+                            const SizedBox(height: 12),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            _buildPointsBreakdown(etatJeu),
+                          ],
                         ],
                       ),
                     ),
@@ -818,91 +1035,106 @@ class _JeuScreenState extends State<JeuScreen> {
                   _buildCartesJoueur(etatJeu, parametres.positionJoueur),
                   const SizedBox(height: 16),
 
-                  // Current player's cards (if not the main player)
-                  if (!estTourJoueur) ...[
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Sélectionnez la carte pour ${joueurActuel.nom}:',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Choisissez parmi toutes les cartes non jouées:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade700,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Show all unplayed cards as options
-                    ...Couleur.values.map((couleur) {
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                couleur.symbole,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: couleur == Couleur.coeur ||
-                                          couleur == Couleur.carreau
-                                      ? Colors.red
-                                      : Colors.black,
+                  // Display missing colors for all players
+                  if (etatJeu.couleursManquantes.values.any((s) => s.isNotEmpty)) ...[
+                    Card(
+                      color: Colors.amber.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Couleurs manquantes:',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...Position.values.map((pos) {
+                              final couleursManquantes = etatJeu.couleursManquantes[pos] ?? {};
+                              if (couleursManquantes.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      '${pos.nom}: ',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: pos == parametres.positionJoueur
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    ...couleursManquantes.map((couleur) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: Text(
+                                          couleur.symbole,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: couleur == Couleur.coeur ||
+                                                    couleur == Couleur.carreau
+                                                ? Colors.red
+                                                : Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: Valeur.values.map((valeur) {
-                                  final carte =
-                                      Carte(couleur: couleur, valeur: valeur);
-                                  final carteDejaJouee =
-                                      etatJeu.estCarteJoueeParQuiconque(carte);
-
-                                  return ElevatedButton(
-                                    onPressed: carteDejaJouee
-                                        ? null
-                                        : () => _jouerCarte(carte),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: carteDejaJouee
-                                          ? Colors.grey.shade300
-                                          : Colors.white,
-                                      foregroundColor: carteDejaJouee
-                                          ? Colors.grey.shade600
-                                          : (couleur == Couleur.coeur ||
-                                                  couleur == Couleur.carreau
-                                              ? Colors.red
-                                              : Colors.black),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      carte.nomValeur,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ],
-                          ),
+                              );
+                            }).toList(),
+                          ],
                         ),
-                      );
-                    }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Show waiting message when it's not the player's turn
+                  if (!estTourJoueur) ...[
+                    const SizedBox(height: 16),
+                    Card(
+                      color: Colors.orange.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.hourglass_empty,
+                              size: 48,
+                              color: Colors.orange.shade700,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'En attente de ${joueurActuel.nom}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange.shade900,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Vous ne pouvez jouer que vos propres cartes pendant votre tour',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ],
               ),
