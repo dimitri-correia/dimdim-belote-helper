@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:dimdim_belote_helper/models/etat_jeu.dart';
 import 'package:dimdim_belote_helper/models/annonce.dart';
 import 'package:dimdim_belote_helper/models/position.dart';
+import 'package:dimdim_belote_helper/screens/jeu_screen.dart';
 
 class EncheresScreen extends StatefulWidget {
   const EncheresScreen({super.key});
@@ -104,6 +105,21 @@ class _EncheresScreenState extends State<EncheresScreen> {
       _estCapot = false;
       _mettreAJourOptions();
     });
+    
+    // Check if bidding should end (last speaker's turn again with all others passed)
+    // Use post-frame callback to avoid navigation during build
+    if (etatJeu.doitTerminerEncheres) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Navigate to game screen automatically, replacing current screen
+        // to prevent going back to completed bidding
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const JeuScreen(),
+          ),
+        );
+      });
+    }
   }
 
   /// Obtient la valeur minimale pour une nouvelle enchère.
@@ -171,6 +187,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
           
           final valeurMin = _obtenirValeurMinimale();
           final peutAnnoncerCapot = _peutAnnoncerCapot();
+          final doitTerminer = etatJeu.doitTerminerEncheres;
           
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -242,23 +259,61 @@ class _EncheresScreenState extends State<EncheresScreen> {
                   const SizedBox(height: 16),
                 ],
                 
+                // Show message if bidding should end, otherwise show bidding options  
+                if (doitTerminer) ...[
+                  Card(
+                    color: Colors.green.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Les enchères sont terminées',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tous les autres joueurs ont passé.\nLe jeu va commencer.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                
                 // Bouton Passe
-                ElevatedButton(
-                  onPressed: () => _ajouterAnnonce(TypeAnnonce.passe),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
-                    backgroundColor: Colors.grey,
-                  ),
-                  child: const Text(
-                    'Passe',
-                    style: TextStyle(fontSize: 18),
-                  ),
+                if (!doitTerminer)
+                  ElevatedButton(
+                    onPressed: () => _ajouterAnnonce(TypeAnnonce.passe),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      backgroundColor: Colors.grey,
+                    ),
+                    child: const Text(
+                      'Passe',
+                      style: TextStyle(fontSize: 18),
+                    ),
                 ),
                 
-                const SizedBox(height: 12),
+                if (!doitTerminer) const SizedBox(height: 12),
                 
                 // Bouton Contre
-                if (_peutContrer)
+                if (!doitTerminer && _peutContrer)
                   ElevatedButton(
                     onPressed: () => _ajouterAnnonce(TypeAnnonce.contre),
                     style: ElevatedButton.styleFrom(
@@ -271,7 +326,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                   ),
                 
-                if (_peutSurcontrer)
+                if (!doitTerminer && _peutSurcontrer)
                   ElevatedButton(
                     onPressed: () => _ajouterAnnonce(TypeAnnonce.surcontre),
                     style: ElevatedButton.styleFrom(
@@ -284,22 +339,23 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                   ),
                 
-                const SizedBox(height: 12),
-                const Divider(),
-                const SizedBox(height: 12),
+                if (!doitTerminer) const SizedBox(height: 12),
+                if (!doitTerminer) const Divider(),
+                if (!doitTerminer) const SizedBox(height: 12),
                 
                 // Section Prise
-                const Text(
-                  'Faire une annonce:',
-                  style: TextStyle(
+                if (!doitTerminer)
+                  const Text(
+                    'Faire une annonce:',
+                    style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
+                if (!doitTerminer) const SizedBox(height: 12),
                 
                 // Checkbox Capot
-                if (peutAnnoncerCapot)
+                if (!doitTerminer && peutAnnoncerCapot)
                   CheckboxListTile(
                     title: const Text(
                       'Capot (prendre tous les plis)',
@@ -317,7 +373,8 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     },
                   ),
                 
-                Expanded(
+                if (!doitTerminer)
+                  Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -399,30 +456,57 @@ class _EncheresScreenState extends State<EncheresScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 12),
+                if (!doitTerminer) const SizedBox(height: 12),
                 
                 // Bouton Annoncer
-                ElevatedButton(
-                  onPressed: (_estCapot && _couleurSelectionnee != null) ||
-                          (!_estCapot && _valeurSelectionnee != null && _couleurSelectionnee != null)
-                      ? () {
-                          _ajouterAnnonce(
-                            TypeAnnonce.prise,
-                            valeur: _estCapot ? null : _valeurSelectionnee,
-                            couleur: _couleurSelectionnee,
-                            estCapot: _estCapot,
-                          );
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
-                    backgroundColor: Colors.blue,
+                if (!doitTerminer)
+                  ElevatedButton(
+                    onPressed: (_estCapot && _couleurSelectionnee != null) ||
+                            (!_estCapot && _valeurSelectionnee != null && _couleurSelectionnee != null)
+                        ? () {
+                            _ajouterAnnonce(
+                              TypeAnnonce.prise,
+                              valeur: _estCapot ? null : _valeurSelectionnee,
+                              couleur: _couleurSelectionnee,
+                              estCapot: _estCapot,
+                            );
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: Text(
+                      _estCapot ? 'Annoncer Capot' : 'Annoncer',
+                      style: const TextStyle(fontSize: 18),
+                    ),
                   ),
-                  child: Text(
-                    _estCapot ? 'Annoncer Capot' : 'Annoncer',
-                    style: const TextStyle(fontSize: 18),
+                
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 12),
+                
+                // Button to proceed to game phase
+                if (etatJeu.annonces.isNotEmpty)
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const JeuScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text(
+                      'Commencer le jeu',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      backgroundColor: Colors.green,
+                    ),
                   ),
-                ),
               ],
             ),
           );
