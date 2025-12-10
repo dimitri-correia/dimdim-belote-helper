@@ -18,12 +18,14 @@ class ParametresJeu {
   final int valeurFin; // nombre de points ou de plis
   final Position positionJoueur;
   final SensRotation sensRotation;
+  final Position? positionDonneur; // position du donneur (dealer)
 
   ParametresJeu({
     required this.conditionFin,
     required this.valeurFin,
     required this.positionJoueur,
     required this.sensRotation,
+    this.positionDonneur,
   });
 }
 
@@ -40,7 +42,15 @@ class EtatJeu extends ChangeNotifier {
 
   void definirParametres(ParametresJeu parametres) {
     _parametres = parametres;
-    _joueurActuel = parametres.positionJoueur;
+    // Le premier à parler est à la droite du donneur
+    if (parametres.positionDonneur != null) {
+      _joueurActuel = parametres.sensRotation == SensRotation.horaire
+          ? parametres.positionDonneur!.suivant
+          : parametres.positionDonneur!.precedent;
+    } else {
+      // Si pas de donneur défini, on commence par le joueur
+      _joueurActuel = parametres.positionJoueur;
+    }
     notifyListeners();
   }
 
@@ -65,7 +75,14 @@ class EtatJeu extends ChangeNotifier {
   void reinitialiserAnnonces() {
     _annonces.clear();
     if (_parametres != null) {
-      _joueurActuel = _parametres!.positionJoueur;
+      // Le premier à parler est à la droite du donneur
+      if (_parametres!.positionDonneur != null) {
+        _joueurActuel = _parametres!.sensRotation == SensRotation.horaire
+            ? _parametres!.positionDonneur!.suivant
+            : _parametres!.positionDonneur!.precedent;
+      } else {
+        _joueurActuel = _parametres!.positionJoueur;
+      }
     }
     notifyListeners();
   }

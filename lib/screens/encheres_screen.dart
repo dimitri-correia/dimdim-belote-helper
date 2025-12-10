@@ -14,6 +14,7 @@ class EncheresScreen extends StatefulWidget {
 class _EncheresScreenState extends State<EncheresScreen> {
   int? _valeurSelectionnee;
   String? _couleurSelectionnee;
+  bool _estCapot = false;
   
   final List<int> _valeursDisponibles = [80, 90, 100, 110, 120, 130, 140, 150, 160];
   final List<String> _couleursDisponibles = [
@@ -31,7 +32,6 @@ class _EncheresScreenState extends State<EncheresScreen> {
   @override
   void initState() {
     super.initState();
-    // Options will be updated in didChangeDependencies
   }
 
   @override
@@ -51,30 +51,40 @@ class _EncheresScreenState extends State<EncheresScreen> {
     }
     
     final derniereAnnonce = annonces.last;
+    final joueurActuel = etatJeu.joueurActuel;
     
     // On peut contrer si la dernière annonce est une prise et qu'elle n'est pas de notre équipe
-    if (derniereAnnonce.type == TypeAnnonce.prise) {
+    if (derniereAnnonce.type == TypeAnnonce.prise && joueurActuel != null) {
       final parametres = etatJeu.parametres;
       if (parametres != null) {
         // Nord-Sud vs Est-Ouest
-        final estEquipeNordSud = parametres.positionJoueur == Position.nord ||
-            parametres.positionJoueur == Position.sud;
+        final joueurActuelEquipeNordSud = joueurActuel == Position.nord ||
+            joueurActuel == Position.sud;
         final annonceEquipeNordSud = derniereAnnonce.joueur == Position.nord ||
             derniereAnnonce.joueur == Position.sud;
         
-        _peutContrer = estEquipeNordSud != annonceEquipeNordSud;
+        _peutContrer = joueurActuelEquipeNordSud != annonceEquipeNordSud;
         _peutSurcontrer = false;
       }
-    } else if (derniereAnnonce.type == TypeAnnonce.contre) {
-      _peutContrer = false;
-      _peutSurcontrer = true;
+    } else if (derniereAnnonce.type == TypeAnnonce.contre && joueurActuel != null) {
+      // On peut surcontrer si la dernière annonce est un contre et qu'il vient de l'équipe adverse
+      final parametres = etatJeu.parametres;
+      if (parametres != null) {
+        final joueurActuelEquipeNordSud = joueurActuel == Position.nord ||
+            joueurActuel == Position.sud;
+        final contreEquipeNordSud = derniereAnnonce.joueur == Position.nord ||
+            derniereAnnonce.joueur == Position.sud;
+        
+        _peutContrer = false;
+        _peutSurcontrer = joueurActuelEquipeNordSud != contreEquipeNordSud;
+      }
     } else {
       _peutContrer = false;
       _peutSurcontrer = false;
     }
   }
 
-  void _ajouterAnnonce(TypeAnnonce type, {int? valeur, String? couleur}) {
+  void _ajouterAnnonce(TypeAnnonce type, {int? valeur, String? couleur, bool estCapot = false}) {
     final etatJeu = context.read<EtatJeu>();
     final joueurActuel = etatJeu.joueurActuel;
     
@@ -85,6 +95,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
       type: type,
       valeur: valeur,
       couleur: couleur,
+      estCapot: estCapot,
     );
     
     etatJeu.ajouterAnnonce(annonce);
@@ -92,24 +103,41 @@ class _EncheresScreenState extends State<EncheresScreen> {
     setState(() {
       _valeurSelectionnee = null;
       _couleurSelectionnee = null;
+      _estCapot = false;
       _mettreAJourOptions();
     });
   }
 
-  int _obtenirValeurMinimale() {
+  /// Obtient la valeur minimale pour une nouvelle enchère.
+  /// Retourne null si les enchères sont bloquées (après un Capot).
+  /// Retourne 80 s'il n'y a pas encore d'annonces.
+  /// Sinon, retourne la dernière valeur + 10.
+  int? _obtenirValeurMinimale() {
     final etatJeu = context.read<EtatJeu>();
     final annonces = etatJeu.annonces;
     
     if (annonces.isEmpty) return 80;
     
-    // Trouver la dernière prise
+    // Si la dernière annonce est un capot, on ne peut plus enchérir
     for (int i = annonces.length - 1; i >= 0; i--) {
-      if (annonces[i].type == TypeAnnonce.prise && annonces[i].valeur != null) {
-        return annonces[i].valeur! + 10;
+      if (annonces[i].type == TypeAnnonce.prise) {
+        if (annonces[i].estCapot) {
+          return null; // null indique qu'on ne peut plus enchérir (après un capot)
+        }
+        if (annonces[i].valeur != null) {
+          return annonces[i].valeur! + 10;
+        }
       }
     }
     
     return 80;
+  }
+
+  /// Retourne true si on peut annoncer un Capot (pas de Capot déjà annoncé).
+  bool _peutAnnoncerCapot() {
+    final valeurMin = _obtenirValeurMinimale();
+    // On peut annoncer capot si on peut encore enchérir (pas de capot avant)
+    return valeurMin != null;
   }
 
   @override
@@ -126,6 +154,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
               setState(() {
                 _valeurSelectionnee = null;
                 _couleurSelectionnee = null;
+                _estCapot = false;
                 _mettreAJourOptions();
               });
             },
@@ -142,8 +171,8 @@ class _EncheresScreenState extends State<EncheresScreen> {
             return const Center(child: Text('Erreur: données manquantes'));
           }
           
-          final estMonTour = joueurActuel == parametres.positionJoueur;
           final valeurMin = _obtenirValeurMinimale();
+          final peutAnnoncerCapot = _peutAnnoncerCapot();
           
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -151,29 +180,31 @@ class _EncheresScreenState extends State<EncheresScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Card(
-                  color: estMonTour ? Colors.green.shade50 : Colors.grey.shade100,
+                  color: Colors.blue.shade50,
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
                       children: [
                         Text(
-                          estMonTour
-                              ? 'C\'est votre tour (${parametres.positionJoueur.nom})'
-                              : 'Tour de ${joueurActuel.nom}',
+                          'Tour de ${joueurActuel.nom}',
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        if (!estMonTour) ...[
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Attendez votre tour ou passez pour le joueur actuel',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12),
+                        const SizedBox(height: 4),
+                        Text(
+                          joueurActuel == parametres.positionJoueur
+                              ? '(C\'est vous)'
+                              : '(Sélectionnez l\'enchère pour ce joueur)',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey.shade700,
                           ),
-                        ],
+                        ),
                       ],
                     ),
                   ),
@@ -231,9 +262,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                 // Bouton Contre
                 if (_peutContrer)
                   ElevatedButton(
-                    onPressed: estMonTour
-                        ? () => _ajouterAnnonce(TypeAnnonce.contre)
-                        : null,
+                    onPressed: () => _ajouterAnnonce(TypeAnnonce.contre),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
                       backgroundColor: Colors.orange,
@@ -246,9 +275,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                 
                 if (_peutSurcontrer)
                   ElevatedButton(
-                    onPressed: estMonTour
-                        ? () => _ajouterAnnonce(TypeAnnonce.surcontre)
-                        : null,
+                    onPressed: () => _ajouterAnnonce(TypeAnnonce.surcontre),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
                       backgroundColor: Colors.red,
@@ -273,50 +300,68 @@ class _EncheresScreenState extends State<EncheresScreen> {
                 ),
                 const SizedBox(height: 12),
                 
+                // Checkbox Capot
+                if (peutAnnoncerCapot)
+                  CheckboxListTile(
+                    title: const Text(
+                      'Capot (prendre tous les plis)',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: const Text('La plus haute enchère possible'),
+                    value: _estCapot,
+                    onChanged: (value) {
+                      setState(() {
+                        _estCapot = value ?? false;
+                        if (_estCapot) {
+                          _valeurSelectionnee = null;
+                        }
+                      });
+                    },
+                  ),
+                
                 Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Valeurs
-                      Expanded(
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Valeur',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Expanded(
-                                  child: ListView(
-                                    children: _valeursDisponibles
-                                        .where((v) => v >= valeurMin)
-                                        .map((valeur) {
-                                      return RadioListTile<int>(
-                                        title: Text(valeur.toString()),
-                                        value: valeur,
-                                        groupValue: _valeurSelectionnee,
-                                        dense: true,
-                                        onChanged: estMonTour
-                                            ? (value) {
-                                                setState(() {
-                                                  _valeurSelectionnee = value;
-                                                });
-                                              }
-                                            : null,
-                                      );
-                                    }).toList(),
+                      if (!_estCapot)
+                        Expanded(
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Valeur',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 8),
+                                  Expanded(
+                                    child: ListView(
+                                      children: _valeursDisponibles
+                                          .where((v) => valeurMin != null && v >= valeurMin)
+                                          .map((valeur) {
+                                        return RadioListTile<int>(
+                                          title: Text(valeur.toString()),
+                                          value: valeur,
+                                          groupValue: _valeurSelectionnee,
+                                          dense: true,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _valeurSelectionnee = value;
+                                            });
+                                          },
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
+                      if (!_estCapot) const SizedBox(width: 8),
                       // Couleurs
                       Expanded(
                         child: Card(
@@ -338,13 +383,11 @@ class _EncheresScreenState extends State<EncheresScreen> {
                                         value: couleur,
                                         groupValue: _couleurSelectionnee,
                                         dense: true,
-                                        onChanged: estMonTour
-                                            ? (value) {
-                                                setState(() {
-                                                  _couleurSelectionnee = value;
-                                                });
-                                              }
-                                            : null,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _couleurSelectionnee = value;
+                                          });
+                                        },
                                       );
                                     }).toList(),
                                   ),
@@ -362,14 +405,14 @@ class _EncheresScreenState extends State<EncheresScreen> {
                 
                 // Bouton Annoncer
                 ElevatedButton(
-                  onPressed: estMonTour &&
-                          _valeurSelectionnee != null &&
-                          _couleurSelectionnee != null
+                  onPressed: (_estCapot && _couleurSelectionnee != null) ||
+                          (!_estCapot && _valeurSelectionnee != null && _couleurSelectionnee != null)
                       ? () {
                           _ajouterAnnonce(
                             TypeAnnonce.prise,
-                            valeur: _valeurSelectionnee,
+                            valeur: _estCapot ? null : _valeurSelectionnee,
                             couleur: _couleurSelectionnee,
+                            estCapot: _estCapot,
                           );
                         }
                       : null,
@@ -377,9 +420,9 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     padding: const EdgeInsets.all(16),
                     backgroundColor: Colors.blue,
                   ),
-                  child: const Text(
-                    'Annoncer',
-                    style: TextStyle(fontSize: 18),
+                  child: Text(
+                    _estCapot ? 'Annoncer Capot' : 'Annoncer',
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ],

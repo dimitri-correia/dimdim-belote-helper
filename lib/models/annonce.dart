@@ -10,14 +10,16 @@ enum TypeAnnonce {
 class Annonce {
   final Position joueur;
   final TypeAnnonce type;
-  final int? valeur; // 80, 90, 100, 110, 120, 130, 140, 150, 160, capot
+  final int? valeur; // 80, 90, 100, 110, 120, 130, 140, 150, 160, ou null pour capot
   final String? couleur; // pique, coeur, carreau, trefle, sans atout, tout atout
+  final bool estCapot; // true si c'est un capot (prendre tous les plis)
 
   Annonce({
     required this.joueur,
     required this.type,
     this.valeur,
     this.couleur,
+    this.estCapot = false,
   });
 
   String get texte {
@@ -29,7 +31,9 @@ class Annonce {
       case TypeAnnonce.surcontre:
         return 'Surcontré';
       case TypeAnnonce.prise:
-        if (valeur != null && couleur != null) {
+        if (estCapot && couleur != null) {
+          return 'Capot $couleur';
+        } else if (valeur != null && couleur != null) {
           return '$valeur $couleur';
         }
         return 'Prise';
