@@ -36,6 +36,18 @@ class CarteJouee {
   CarteJouee({required this.joueur, required this.carte});
 }
 
+class PliTermine {
+  final List<CarteJouee> cartes;
+  final Position gagnant;
+  final int points;
+
+  PliTermine({
+    required this.cartes,
+    required this.gagnant,
+    required this.points,
+  });
+}
+
 class EtatJeu extends ChangeNotifier {
   ParametresJeu? _parametres;
   List<Carte> _cartesJoueur = [];
@@ -49,6 +61,11 @@ class EtatJeu extends ChangeNotifier {
   List<CarteJouee> _pliActuel = [];
   Position? _premierJoueurPli; // Who played first in current pli
   List<Carte> _cartesJouees = []; // All cards played by the player
+  
+  // Track all players' cards
+  Map<Position, List<Carte>> _cartesParJoueur = {};
+  Map<Position, List<Carte>> _cartesJoueesParJoueur = {};
+  List<PliTermine> _plisTermines = [];
 
   ParametresJeu? get parametres => _parametres;
   List<Carte> get cartesJoueur => _cartesJoueur;
@@ -60,6 +77,9 @@ class EtatJeu extends ChangeNotifier {
   List<CarteJouee> get pliActuel => _pliActuel;
   Position? get premierJoueurPli => _premierJoueurPli;
   List<Carte> get cartesJouees => _cartesJouees;
+  Map<Position, List<Carte>> get cartesParJoueur => _cartesParJoueur;
+  Map<Position, List<Carte>> get cartesJoueesParJoueur => _cartesJoueesParJoueur;
+  List<PliTermine> get plisTermines => _plisTermines;
 
   /// Check if bidding should end because it's the turn of the last player
   /// who made a non-pass bid and all others have passed since then.
@@ -148,6 +168,9 @@ class EtatJeu extends ChangeNotifier {
     _pliActuel = [];
     _premierJoueurPli = null;
     _cartesJouees = [];
+    _cartesParJoueur = {};
+    _cartesJoueesParJoueur = {};
+    _plisTermines = [];
     notifyListeners();
   }
 
@@ -165,6 +188,20 @@ class EtatJeu extends ChangeNotifier {
     _pointsEstOuest = 0;
     _pliActuel = [];
     _cartesJouees = [];
+    _cartesParJoueur = {};
+    _cartesJoueesParJoueur = {};
+    _plisTermines = [];
+    
+    // Initialize cards for all players
+    for (final position in Position.values) {
+      _cartesJoueesParJoueur[position] = [];
+      if (position == _parametres?.positionJoueur) {
+        _cartesParJoueur[position] = List.from(_cartesJoueur);
+      } else {
+        // Initialize with all 8 cards for other players (unknown cards)
+        _cartesParJoueur[position] = [];
+      }
+    }
     notifyListeners();
   }
 
@@ -172,8 +209,17 @@ class EtatJeu extends ChangeNotifier {
   void jouerCarte(Carte carte) {
     if (_joueurActuel == null) return;
 
+    // Track first player of the pli
+    if (_pliActuel.isEmpty) {
+      _premierJoueurPli = _joueurActuel;
+    }
+
     // Add to current pli
     _pliActuel.add(CarteJouee(joueur: _joueurActuel!, carte: carte));
+
+    // Track played card for this player
+    _cartesJoueesParJoueur[_joueurActuel!] ??= [];
+    _cartesJoueesParJoueur[_joueurActuel!]!.add(carte);
 
     // If this is the player's card, remove it and track it
     if (_joueurActuel == _parametres?.positionJoueur) {
@@ -181,6 +227,9 @@ class EtatJeu extends ChangeNotifier {
         (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
       );
       _cartesJouees.add(carte);
+      _cartesParJoueur[_joueurActuel!]?.removeWhere(
+        (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
+      );
     }
 
     // Move to next player
@@ -199,17 +248,39 @@ class EtatJeu extends ChangeNotifier {
   }
 
   void _terminerPli() {
+    // Simple implementation: first player wins for now
     // TODO: Implement proper pli winner determination based on trump suit
-    // For now, just increment pli count and reset
-    // In a complete implementation, we'd:
-    // 1. Determine the trump suit from the winning bid
-    // 2. Calculate which card wins (trump > suit > other)
-    // 3. Award points to the winning team
-    // 4. Set the winner as the first player for the next pli
-    _nombrePlis++;
+    final gagnant = _premierJoueurPli ?? Position.nord;
     
+    // Calculate points for this pli
+    int points = 0;
+    for (final carteJouee in _pliActuel) {
+      // For now, use non-trump points (will need trump info later)
+      points += carteJouee.carte.pointsNonAtout;
+    }
+    
+    // Add 10 points for the last pli (dix de der)
+    if (_nombrePlis == 7) { // 8th pli (0-indexed)
+      points += 10;
+    }
+    
+    // Store the completed pli
+    _plisTermines.add(PliTermine(
+      cartes: List.from(_pliActuel),
+      gagnant: gagnant,
+      points: points,
+    ));
+    
+    // Award points to winning team
+    if (gagnant == Position.nord || gagnant == Position.sud) {
+      _pointsNordSud += points;
+    } else {
+      _pointsEstOuest += points;
+    }
+    
+    _nombrePlis++;
     _pliActuel = [];
-    // _joueurActuel is already set to the next player
+    _joueurActuel = gagnant; // Winner plays first in next pli
   }
 
   /// Check if a card has been played by the player
@@ -217,5 +288,17 @@ class EtatJeu extends ChangeNotifier {
     return _cartesJouees.any(
       (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
     );
+  }
+
+  /// Check if a card has been played by a specific player
+  bool estCarteJoueeParJoueur(Position joueur, Carte carte) {
+    return _cartesJoueesParJoueur[joueur]?.any(
+      (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
+    ) ?? false;
+  }
+
+  /// Get all cards for a specific player
+  List<Carte> getCartesJoueur(Position joueur) {
+    return _cartesParJoueur[joueur] ?? [];
   }
 }

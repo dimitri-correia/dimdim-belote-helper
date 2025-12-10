@@ -12,7 +12,8 @@ class JeuScreen extends StatefulWidget {
 }
 
 class _JeuScreenState extends State<JeuScreen> {
-  bool _grayerCartesJouees = false;
+  bool _grayerCartesJoueesJoueur = false;
+  bool _afficherCartesAutresJoueurs = false;
 
   @override
   void initState() {
@@ -46,6 +47,130 @@ class _JeuScreenState extends State<JeuScreen> {
     return 'Ordre: ${ordre.map((p) => p.nom).join(' → ')}';
   }
 
+  Widget _buildCartesJoueur(EtatJeu etatJeu, Position position) {
+    final parametres = etatJeu.parametres;
+    if (parametres == null) return const SizedBox.shrink();
+
+    final estJoueurPrincipal = position == parametres.positionJoueur;
+    final cartes = estJoueurPrincipal 
+        ? etatJeu.cartesJoueur 
+        : etatJeu.getCartesJoueur(position);
+    
+    final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
+    
+    // Group cards by color
+    final cartesByCouleur = <Couleur, List<Carte>>{};
+    for (final carte in cartes) {
+      cartesByCouleur.putIfAbsent(carte.couleur, () => []).add(carte);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              estJoueurPrincipal ? 'Vos cartes:' : 'Cartes de ${position.nom}:',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (estJoueurPrincipal)
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _grayerCartesJoueesJoueur = !_grayerCartesJoueesJoueur;
+                  });
+                },
+                icon: Icon(
+                  _grayerCartesJoueesJoueur
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                ),
+                label: Text(
+                  _grayerCartesJoueesJoueur
+                      ? 'Montrer jouées'
+                      : 'Griser jouées',
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...Couleur.values.map((couleur) {
+          final cartesCouleur = cartesByCouleur[couleur] ?? [];
+          if (cartesCouleur.isEmpty && estJoueurPrincipal) {
+            return const SizedBox.shrink();
+          }
+
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    couleur.symbole,
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: couleur == Couleur.coeur ||
+                              couleur == Couleur.carreau
+                          ? Colors.red
+                          : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: cartesCouleur.map((carte) {
+                      final estJouee = etatJeu.estCarteJoueeParJoueur(position, carte);
+                      final estGrisee = estJoueurPrincipal && _grayerCartesJoueesJoueur && estJouee;
+
+                      return ElevatedButton(
+                        onPressed: () => _jouerCarte(carte),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: estGrisee
+                              ? Colors.grey.shade300
+                              : Colors.white,
+                          foregroundColor: estGrisee
+                              ? Colors.grey.shade600
+                              : (couleur == Couleur.coeur ||
+                                      couleur == Couleur.carreau
+                                  ? Colors.red
+                                  : Colors.black),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: Text(
+                          carte.nomValeur,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,220 +189,338 @@ class _JeuScreenState extends State<JeuScreen> {
 
           final estTourJoueur = joueurActuel == parametres.positionJoueur;
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Game info at top
-                Card(
-                  color: Colors.blue.shade50,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Column(
-                              children: [
-                                const Text(
-                                  'Plis joués',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Game info at top
+                  Card(
+                    color: Colors.blue.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Plis joués',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  '${etatJeu.nombrePlis}',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
+                                  Text(
+                                    '${etatJeu.nombrePlis}',
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Nord-Sud',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${etatJeu.pointsNordSud} pts',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Est-Ouest',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${etatJeu.pointsEstOuest} pts',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Current player info
+                  Card(
+                    color: estTourJoueur ? Colors.green.shade50 : Colors.grey.shade100,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Tour de ${joueurActuel.nom}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: estTourJoueur ? Colors.green.shade900 : Colors.black,
                             ),
-                            Column(
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            estTourJoueur
+                                ? '(C\'est vous)'
+                                : '(Sélectionnez la carte pour ce joueur)',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _obtenirOrdreJeu(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Current pli
+                  if (etatJeu.pliActuel.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Pli en cours:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (etatJeu.premierJoueurPli != null)
+                          Text(
+                            'Démarré par: ${etatJeu.premierJoueurPli!.nom}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: etatJeu.pliActuel.map((carteJouee) {
+                            return Chip(
+                              avatar: CircleAvatar(
+                                child: Text(carteJouee.joueur.nom[0]),
+                              ),
+                              label: Text(
+                                carteJouee.carte.toString(),
+                                style: TextStyle(
+                                  color: carteJouee.carte.couleur == Couleur.coeur ||
+                                          carteJouee.carte.couleur == Couleur.carreau
+                                      ? Colors.red
+                                      : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Last completed pli info
+                  if (etatJeu.plisTermines.isNotEmpty) ...[
+                    Card(
+                      color: Colors.amber.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  'Nord-Sud',
+                                  'Dernier pli:',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  '${etatJeu.pointsNordSud} pts',
+                                  'Gagné par: ${etatJeu.plisTermines.last.gagnant.nom}',
                                   style: const TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                Text(
+                                  '${etatJeu.plisTermines.last.points} pts',
+                                  style: const TextStyle(
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.green,
                                   ),
                                 ),
                               ],
                             ),
-                            Column(
-                              children: [
-                                const Text(
-                                  'Est-Ouest',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  '${etatJeu.pointsEstOuest} pts',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                  ],
 
-                // Current player info
-                Card(
-                  color: estTourJoueur ? Colors.green.shade50 : Colors.grey.shade100,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Tour de ${joueurActuel.nom}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: estTourJoueur ? Colors.green.shade900 : Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          estTourJoueur
-                              ? '(C\'est vous)'
-                              : '(Sélectionnez la carte pour ce joueur)',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _obtenirOrdreJeu(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Current pli
-                if (etatJeu.pliActuel.isNotEmpty) ...[
-                  const Text(
-                    'Pli en cours:',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  // Toggle to show other players' cards
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: etatJeu.pliActuel.map((carteJouee) {
-                          return Chip(
-                            avatar: CircleAvatar(
-                              child: Text(carteJouee.joueur.nom[0]),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Afficher cartes jouées par les autres:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
                             ),
-                            label: Text(
-                              carteJouee.carte.toString(),
-                              style: TextStyle(
-                                color: carteJouee.carte.couleur == Couleur.coeur ||
-                                        carteJouee.carte.couleur == Couleur.carreau
-                                    ? Colors.red
-                                    : Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                          ),
+                          Switch(
+                            value: _afficherCartesAutresJoueurs,
+                            onChanged: (value) {
+                              setState(() {
+                                _afficherCartesAutresJoueurs = value;
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                ],
 
-                // Toggle button for graying played cards
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+                  // Show other players' played cards if toggled
+                  if (_afficherCartesAutresJoueurs) ...[
                     const Text(
-                      'Vos cartes:',
+                      'Cartes jouées par les autres joueurs:',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _grayerCartesJouees = !_grayerCartesJouees;
-                        });
-                      },
-                      icon: Icon(
-                        _grayerCartesJouees
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      label: Text(
-                        _grayerCartesJouees
-                            ? 'Montrer jouées'
-                            : 'Griser jouées',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                    const SizedBox(height: 8),
+                    ...Position.values.where((p) => p != parametres.positionJoueur).map((position) {
+                      final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
+                      if (cartesJouees.isEmpty) return const SizedBox.shrink();
+                      
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${position.nom}:',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: cartesJouees.map((carte) {
+                                  return Chip(
+                                    label: Text(
+                                      carte.toString(),
+                                      style: TextStyle(
+                                        color: carte.couleur == Couleur.coeur ||
+                                                carte.couleur == Couleur.carreau
+                                            ? Colors.red
+                                            : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
                         ),
+                      );
+                    }).toList(),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Player's cards (always shown)
+                  _buildCartesJoueur(etatJeu, parametres.positionJoueur),
+                  const SizedBox(height: 16),
+
+                  // Current player's cards (if not the main player)
+                  if (!estTourJoueur) ...[
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Sélectionnez la carte pour ${joueurActuel.nom}:',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Player's cards
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: Couleur.values.length,
-                    itemBuilder: (context, index) {
-                      final couleur = Couleur.values[index];
-                      final cartesCouleur = etatJeu.cartesJoueur
-                          .where((c) => c.couleur == couleur)
-                          .toList();
-
-                      if (cartesCouleur.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-
+                    const SizedBox(height: 8),
+                    Text(
+                      'Choisissez parmi toutes les cartes non jouées:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade700,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Show all unplayed cards as options
+                    ...Couleur.values.map((couleur) {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         child: Padding(
@@ -299,17 +542,30 @@ class _JeuScreenState extends State<JeuScreen> {
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: cartesCouleur.map((carte) {
-                                  final estJouee = etatJeu.estCarteJouee(carte);
-                                  final estGrisee = _grayerCartesJouees && estJouee;
+                                children: Valeur.values.map((valeur) {
+                                  final carte = Carte(couleur: couleur, valeur: valeur);
+                                  // Check if this card has been played by anyone
+                                  bool carteDejaJouee = false;
+                                  for (final pos in Position.values) {
+                                    if (etatJeu.estCarteJoueeParJoueur(pos, carte)) {
+                                      carteDejaJouee = true;
+                                      break;
+                                    }
+                                  }
+                                  // Also check if it's in the current pli
+                                  if (etatJeu.pliActuel.any((cj) => 
+                                      cj.carte.couleur == carte.couleur && 
+                                      cj.carte.valeur == carte.valeur)) {
+                                    carteDejaJouee = true;
+                                  }
 
                                   return ElevatedButton(
-                                    onPressed: () => _jouerCarte(carte),
+                                    onPressed: carteDejaJouee ? null : () => _jouerCarte(carte),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: estGrisee
+                                      backgroundColor: carteDejaJouee
                                           ? Colors.grey.shade300
                                           : Colors.white,
-                                      foregroundColor: estGrisee
+                                      foregroundColor: carteDejaJouee
                                           ? Colors.grey.shade600
                                           : (couleur == Couleur.coeur ||
                                                   couleur == Couleur.carreau
@@ -334,10 +590,10 @@ class _JeuScreenState extends State<JeuScreen> {
                           ),
                         ),
                       );
-                    },
-                  ),
-                ),
-              ],
+                    }).toList(),
+                  ],
+                ],
+              ),
             ),
           );
         },
