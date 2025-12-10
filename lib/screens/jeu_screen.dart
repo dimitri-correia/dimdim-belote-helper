@@ -14,6 +14,7 @@ class JeuScreen extends StatefulWidget {
 class _JeuScreenState extends State<JeuScreen> {
   bool _grayerCartesJoueesJoueur = false;
   bool _afficherCartesAutresJoueurs = false;
+  bool _afficherTousLesPlis = false;
 
   @override
   void initState() {
@@ -211,30 +212,45 @@ class _JeuScreenState extends State<JeuScreen> {
                             children: [
                               Column(
                                 children: [
-                                  const Text(
-                                    'Plis joués',
-                                    style: TextStyle(
+                                  Text(
+                                    parametres.conditionFin == ConditionFin.plis
+                                        ? 'Plis'
+                                        : 'Plis joués',
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                   Text(
-                                    '${etatJeu.nombrePlis}',
+                                    parametres.conditionFin == ConditionFin.plis
+                                        ? '${etatJeu.nombrePlis}/${parametres.valeurFin}'
+                                        : '${etatJeu.nombrePlis}',
                                     style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blue,
                                     ),
                                   ),
+                                  if (parametres.conditionFin == ConditionFin.points)
+                                    Text(
+                                      '(${parametres.valeurFin} pts pour gagner)',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
                                 ],
                               ),
                               Column(
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Nord-Sud',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: (parametres.positionJoueur == Position.nord ||
+                                              parametres.positionJoueur == Position.sud)
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
                                     ),
                                   ),
                                   Text(
@@ -249,11 +265,14 @@ class _JeuScreenState extends State<JeuScreen> {
                               ),
                               Column(
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Est-Ouest',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: (parametres.positionJoueur == Position.est ||
+                                              parametres.positionJoueur == Position.ouest)
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
                                     ),
                                   ),
                                   Text(
@@ -332,15 +351,29 @@ class _JeuScreenState extends State<JeuScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        if (etatJeu.premierJoueurPli != null)
-                          Text(
-                            'Démarré par: ${etatJeu.premierJoueurPli!.nom}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade700,
-                              fontStyle: FontStyle.italic,
+                        Row(
+                          children: [
+                            Text(
+                              '${etatJeu.pointsPliActuel} pts',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
                             ),
-                          ),
+                            if (etatJeu.gagnantPliActuel != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '• Prend: ${etatJeu.gagnantPliActuel!.nom}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -375,47 +408,117 @@ class _JeuScreenState extends State<JeuScreen> {
                     const SizedBox(height: 16),
                   ],
 
-                  // Last completed pli info
+                  // All completed plis toggle and display
                   if (etatJeu.plisTermines.isNotEmpty) ...[
                     Card(
-                      color: Colors.amber.shade50,
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Dernier pli:',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'Gagné par: ${etatJeu.plisTermines.last.gagnant.nom}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                                Text(
-                                  '${etatJeu.plisTermines.last.points} pts',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'Afficher tous les plis (${etatJeu.plisTermines.length}):',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Switch(
+                              value: _afficherTousLesPlis,
+                              onChanged: (value) {
+                                setState(() {
+                                  _afficherTousLesPlis = value;
+                                });
+                              },
                             ),
                           ],
                         ),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Display all completed plis if toggled
+                  if (etatJeu.plisTermines.isNotEmpty && _afficherTousLesPlis) ...[
+                    const Text(
+                      'Historique des plis:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...etatJeu.plisTermines.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final pli = entry.value;
+                      final isLastPli = index == etatJeu.plisTermines.length - 1;
+                      
+                      return Card(
+                        color: isLastPli ? Colors.amber.shade50 : null,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Pli ${index + 1}${isLastPli ? " (dernier)" : ""}:',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${pli.points} pts',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: pli.cartes.map((carteJouee) {
+                                  return Chip(
+                                    avatar: CircleAvatar(
+                                      child: Text(carteJouee.joueur.nom[0]),
+                                    ),
+                                    label: Text(
+                                      carteJouee.carte.toString(),
+                                      style: TextStyle(
+                                        color: carteJouee.carte.couleur ==
+                                                    Couleur.coeur ||
+                                                carteJouee.carte.couleur ==
+                                                    Couleur.carreau
+                                            ? Colors.red
+                                            : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Gagné par: ${pli.gagnant.nom}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                     const SizedBox(height: 16),
                   ],
 

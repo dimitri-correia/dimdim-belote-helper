@@ -318,4 +318,26 @@ class EtatJeu extends ChangeNotifier {
   List<Carte> getCartesJoueur(Position joueur) {
     return _cartesParJoueur[joueur] ?? [];
   }
+
+  /// Calculate current pli points
+  int get pointsPliActuel {
+    int points = 0;
+    for (final carteJouee in _pliActuel) {
+      // For now, use non-trump points (will need trump info later)
+      points += carteJouee.carte.pointsNonAtout;
+    }
+    return points;
+  }
+
+  /// Get the current winner of the pli in progress
+  Position? get gagnantPliActuel {
+    if (_pliActuel.isEmpty || _premierJoueurPli == null) return null;
+    
+    // For now, simplified logic: first player wins
+    // In a complete implementation:
+    // 1. Get trump suit from winning bid in annonces
+    // 2. Compare cards based on trump rules
+    // 3. Handle suit following rules
+    return _premierJoueurPli;
+  }
 }
