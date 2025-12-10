@@ -67,19 +67,14 @@ class EtatJeu extends ChangeNotifier {
     if (_annonces.isEmpty || _joueurActuel == null) return false;
     
     // Find the last non-pass announcement
-    Annonce? dernierNonPasse;
-    int indexDernierNonPasse = -1;
-    
-    for (int i = _annonces.length - 1; i >= 0; i--) {
-      if (_annonces[i].type != TypeAnnonce.passe) {
-        dernierNonPasse = _annonces[i];
-        indexDernierNonPasse = i;
-        break;
-      }
-    }
+    final indexDernierNonPasse = _annonces.lastIndexWhere(
+      (annonce) => annonce.type != TypeAnnonce.passe,
+    );
     
     // If no non-pass bid yet, bidding shouldn't end
-    if (dernierNonPasse == null) return false;
+    if (indexDernierNonPasse == -1) return false;
+    
+    final dernierNonPasse = _annonces[indexDernierNonPasse];
     
     // Check that all announcements after the last non-pass are passes
     // and that at least 3 consecutive passes have occurred (all other players)
