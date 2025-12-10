@@ -58,27 +58,28 @@ class _JeuScreenState extends State<JeuScreen> {
     final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
     
     // Combine current and played cards
-    final toutesLesCartes = <Carte>[];
-    
-    // Add current cards
     final cartesCourantes = estJoueurPrincipal
         ? etatJeu.cartesJoueur
         : etatJeu.getCartesJoueur(position);
-    toutesLesCartes.addAll(cartesCourantes);
     
-    // Add played cards (avoiding duplicates)
+    // Use a Set to track unique cards efficiently
+    final cartesUniques = <String, Carte>{};
+    
+    // Add current cards
+    for (final carte in cartesCourantes) {
+      final key = '${carte.couleur.index}_${carte.valeur.index}';
+      cartesUniques[key] = carte;
+    }
+    
+    // Add played cards (Set automatically handles duplicates)
     for (final carte in cartesJouees) {
-      final exists = toutesLesCartes.any(
-        (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
-      );
-      if (!exists) {
-        toutesLesCartes.add(carte);
-      }
+      final key = '${carte.couleur.index}_${carte.valeur.index}';
+      cartesUniques[key] = carte;
     }
     
     // Group cards by color once
     final cartesByCouleur = <Couleur, List<Carte>>{};
-    for (final carte in toutesLesCartes) {
+    for (final carte in cartesUniques.values) {
       cartesByCouleur.putIfAbsent(carte.couleur, () => []).add(carte);
     }
 
