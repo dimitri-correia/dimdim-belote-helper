@@ -54,24 +54,25 @@ class _JeuScreenState extends State<JeuScreen> {
     final estJoueurPrincipal = position == parametres.positionJoueur;
     final estTourJoueur = etatJeu.joueurActuel == parametres.positionJoueur;
     
-    // Get played and remaining cards for main player
+    // Get played and remaining cards for this position
     final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
     
     // Create a set of player's cards (current + played) for quick lookup
     final Map<String, Carte> mesCartesMap = {};
     
     // Add current cards
-    for (final carte in etatJeu.cartesJoueur) {
+    final cartesCourantes = estJoueurPrincipal
+        ? etatJeu.cartesJoueur
+        : etatJeu.getCartesJoueur(position);
+    for (final carte in cartesCourantes) {
       final key = '${carte.couleur.index}_${carte.valeur.index}';
       mesCartesMap[key] = carte;
     }
     
     // Add played cards
-    if (estJoueurPrincipal) {
-      for (final carte in cartesJouees) {
-        final key = '${carte.couleur.index}_${carte.valeur.index}';
-        mesCartesMap[key] = carte;
-      }
+    for (final carte in cartesJouees) {
+      final key = '${carte.couleur.index}_${carte.valeur.index}';
+      mesCartesMap[key] = carte;
     }
 
     return Column(
