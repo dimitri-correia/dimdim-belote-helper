@@ -321,7 +321,7 @@ void main() {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
         valeurFin: 1000,
-        positionJoueur: Position.sud, // Player is Sud
+        positionJoueur: Position.sud, // Le joueur est Sud
         sensRotation: SensRotation.horaire,
         positionDonneur: Position.nord,
       );
@@ -335,35 +335,35 @@ void main() {
       etatJeu.definirCartes(cartes);
       etatJeu.commencerJeu();
 
-      // Current player should be Est (first after dealer)
+      // Le joueur actuel devrait être Est (premier après le donneur)
       expect(etatJeu.joueurActuel, Position.est);
 
-      // Even though it's Est's turn (not Sud's turn), we can play a card for Est
+      // Même si c'est le tour de Est (pas Sud), on peut jouer une carte pour Est
       final carteAJouer = Carte(couleur: Couleur.carreau, valeur: Valeur.valet);
       etatJeu.jouerCarte(carteAJouer);
 
-      // Card should be added to current pli
+      // La carte devrait être ajoutée au pli actuel
       expect(etatJeu.pliActuel.length, 1);
       expect(etatJeu.pliActuel[0].carte.couleur, Couleur.carreau);
       expect(etatJeu.pliActuel[0].carte.valeur, Valeur.valet);
       expect(etatJeu.pliActuel[0].joueur, Position.est);
 
-      // Player's cards should not be affected (card was played for Est, not Sud)
+      // Les cartes du joueur ne devraient pas être affectées (carte jouée pour Est, pas Sud)
       expect(etatJeu.cartesJoueur.length, 2);
-      expect(etatJeu.cartesJouees.length, 0); // No card tracked as played by player
+      expect(etatJeu.cartesJouees.length, 0); // Aucune carte suivie comme jouée par le joueur
 
-      // Next player should be Sud (rotation horaire)
+      // Le prochain joueur devrait être Sud (rotation horaire)
       expect(etatJeu.joueurActuel, Position.sud);
       
-      // Now play a card for Sud (the player)
+      // Maintenant jouer une carte pour Sud (le joueur)
       final carteJoueur = Carte(couleur: Couleur.pique, valeur: Valeur.as);
       etatJeu.jouerCarte(carteJoueur);
       
-      // Card should be removed from player's hand
+      // La carte devrait être retirée de la main du joueur
       expect(etatJeu.cartesJoueur.length, 1);
       expect(etatJeu.cartesJoueur[0].couleur, Couleur.coeur);
       
-      // Card should be tracked as played by player
+      // La carte devrait être suivie comme jouée par le joueur
       expect(etatJeu.cartesJouees.length, 1);
       expect(etatJeu.cartesJouees[0].couleur, Couleur.pique);
     });
