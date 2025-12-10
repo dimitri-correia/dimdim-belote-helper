@@ -320,20 +320,22 @@ class EtatJeu extends ChangeNotifier {
   }
 
   /// Calculate current pli points
+  /// TODO: Use trump-aware point calculation when trump logic is implemented
   int get pointsPliActuel {
     int points = 0;
     for (final carteJouee in _pliActuel) {
-      // For now, use non-trump points (will need trump info later)
+      // For now, use non-trump points (consistent with _terminerPli)
       points += carteJouee.carte.pointsNonAtout;
     }
     return points;
   }
 
   /// Get the current winner of the pli in progress
+  /// TODO: Implement proper pli winner determination based on trump suit
   Position? get gagnantPliActuel {
     if (_pliActuel.isEmpty || _premierJoueurPli == null) return null;
     
-    // For now, simplified logic: first player wins
+    // For now, simplified logic: first player wins (consistent with _terminerPli)
     // In a complete implementation:
     // 1. Get trump suit from winning bid in annonces
     // 2. Compare cards based on trump rules
