@@ -166,8 +166,6 @@ Two columns side by side:
   - ♥ Cœur
   - ♦ Carreau
   - ♣ Trèfle
-  - SA Sans atout
-  - TA Tout atout
 
 #### Annoncer Button:
 - "Annoncer" (Blue, full width)
