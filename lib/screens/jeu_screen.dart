@@ -87,6 +87,16 @@ class _JeuScreenState extends State<JeuScreen> {
         const SizedBox(height: 8),
         // Show all possible cards organized by color, like other players
         ...Couleur.values.map((couleur) {
+          // Filter to only show player's cards for this color
+          final cartesAffichees = mesCartesMap.values
+              .where((carte) => carte.couleur == couleur)
+              .toList();
+          
+          // Skip empty color sections
+          if (cartesAffichees.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             child: Padding(
@@ -108,17 +118,9 @@ class _JeuScreenState extends State<JeuScreen> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: Valeur.values.map((valeur) {
-                      final carte = Carte(couleur: couleur, valeur: valeur);
-                      final key = '${carte.couleur.index}_${carte.valeur.index}';
-                      final estMaCarte = mesCartesMap.containsKey(key);
-                      final estJouee = estMaCarte &&
+                    children: cartesAffichees.map((carte) {
+                      final estJouee =
                           etatJeu.estCarteJoueeParJoueur(position, carte);
-
-                      // Don't show cards that are not mine
-                      if (!estMaCarte) {
-                        return const SizedBox.shrink();
-                      }
 
                       return Column(
                         mainAxisSize: MainAxisSize.min,
