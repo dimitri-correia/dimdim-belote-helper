@@ -387,4 +387,29 @@ class EtatJeu extends ChangeNotifier {
     
     notifyListeners();
   }
+
+  /// Get the winning announcement (the last prise/contre/surcontre)
+  Annonce? get annonceGagnante {
+    if (_annonces.isEmpty) return null;
+    
+    // Find the last non-pass announcement
+    for (int i = _annonces.length - 1; i >= 0; i--) {
+      if (_annonces[i].type != TypeAnnonce.passe) {
+        return _annonces[i];
+      }
+    }
+    
+    return null;
+  }
+
+  /// Get the atout (trump) color from the winning bid
+  String? get atout {
+    // Find the last prise in announcements
+    for (int i = _annonces.length - 1; i >= 0; i--) {
+      if (_annonces[i].type == TypeAnnonce.prise && _annonces[i].couleur != null) {
+        return _annonces[i].couleur;
+      }
+    }
+    return null;
+  }
 }

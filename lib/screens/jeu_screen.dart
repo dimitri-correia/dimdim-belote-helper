@@ -285,6 +285,106 @@ class _JeuScreenState extends State<JeuScreen> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Announcements and Atout section
+                  if (etatJeu.annonces.isNotEmpty) ...[
+                    Card(
+                      color: Colors.amber.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Atout',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (etatJeu.atout != null)
+                                  Text(
+                                    etatJeu.atout!,
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: etatJeu.atout!.contains('♥') ||
+                                              etatJeu.atout!.contains('♦')
+                                          ? Colors.red
+                                          : Colors.black,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Annonces:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...etatJeu.annonces.map((annonce) {
+                              final isWinning = etatJeu.annonceGagnante == annonce;
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isWinning
+                                      ? Colors.green.shade100
+                                      : Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: isWinning
+                                      ? Border.all(
+                                          color: Colors.green.shade700,
+                                          width: 2,
+                                        )
+                                      : null,
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 12,
+                                      child: Text(
+                                        annonce.joueur.nom[0],
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        annonce.texte,
+                                        style: TextStyle(
+                                          fontWeight: isWinning
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isWinning)
+                                      Icon(
+                                        Icons.star,
+                                        size: 16,
+                                        color: Colors.green.shade700,
+                                      ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
                   // Current main points
                   Card(
                     color: Colors.blue.shade50,
