@@ -407,14 +407,15 @@ class EtatJeu extends ChangeNotifier {
   /// that establishes the trump. Contre and surcontre don't change the trump,
   /// they only affect the multiplier.
   String? get atout {
-    try {
-      return _annonces
-          .lastWhere(
-            (a) => a.type == TypeAnnonce.prise && a.couleur != null,
-          )
-          .couleur;
-    } catch (e) {
+    // Check if there's any prise with a couleur
+    if (!_annonces.any((a) => a.type == TypeAnnonce.prise && a.couleur != null)) {
       return null;
     }
+    
+    return _annonces
+        .lastWhere(
+          (a) => a.type == TypeAnnonce.prise && a.couleur != null,
+        )
+        .couleur;
   }
 }
