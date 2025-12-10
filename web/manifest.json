@@ -1,0 +1,11 @@
+{
+    "name": "Dimdim Belote",
+    "short_name": "Dimdim Belote",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0175C2",
+    "theme_color": "#0175C2",
+    "description": "Assistant pour la Belote Contrée",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false
+}
