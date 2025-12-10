@@ -11,7 +11,7 @@ class Annonce {
   final Position joueur;
   final TypeAnnonce type;
   final int? valeur; // 80, 90, 100, 110, 120, 130, 140, 150, 160, ou null pour capot
-  final String? couleur; // pique, coeur, carreau, trefle, sans atout, tout atout
+  final String? couleur; // pique, coeur, carreau, trefle
   final bool estCapot; // true si c'est un capot (prendre tous les plis)
 
   Annonce({

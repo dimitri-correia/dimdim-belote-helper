@@ -22,8 +22,6 @@ class _EncheresScreenState extends State<EncheresScreen> {
     '♥ Cœur',
     '♦ Carreau',
     '♣ Trèfle',
-    'SA Sans atout',
-    'TA Tout atout',
   ];
 
   bool _peutContrer = false;
