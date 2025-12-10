@@ -152,15 +152,25 @@ class _JeuScreenState extends State<JeuScreen> {
                     child: Column(
                       children: [
                         Text(
-                          estTourJoueur 
-                              ? 'C\'est votre tour'
-                              : 'Tour de ${joueurActuel.nom}',
+                          'Tour de ${joueurActuel.nom}',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: estTourJoueur ? Colors.green.shade900 : Colors.black,
                           ),
                           textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          estTourJoueur
+                              ? '(C\'est vous)'
+                              : '(Sélectionnez la carte pour ce joueur)',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey.shade700,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -294,9 +304,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   final estGrisee = _grayerCartesJouees && estJouee;
 
                                   return ElevatedButton(
-                                    onPressed: estTourJoueur
-                                        ? () => _jouerCarte(carte)
-                                        : null,
+                                    onPressed: () => _jouerCarte(carte),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: estGrisee
                                           ? Colors.grey.shade300

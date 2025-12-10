@@ -317,6 +317,57 @@ void main() {
       expect(etatJeu.estCarteJouee(carteNonJouee), false);
     });
 
+    test('Jouer carte pour autre joueur', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.sud, // Player is Sud
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.nord,
+      );
+
+      final cartes = [
+        Carte(couleur: Couleur.pique, valeur: Valeur.as),
+        Carte(couleur: Couleur.coeur, valeur: Valeur.roi),
+      ];
+
+      etatJeu.definirParametres(parametres);
+      etatJeu.definirCartes(cartes);
+      etatJeu.commencerJeu();
+
+      // Current player should be Est (first after dealer)
+      expect(etatJeu.joueurActuel, Position.est);
+
+      // Even though it's Est's turn (not Sud's turn), we can play a card for Est
+      final carteAJouer = Carte(couleur: Couleur.carreau, valeur: Valeur.valet);
+      etatJeu.jouerCarte(carteAJouer);
+
+      // Card should be added to current pli
+      expect(etatJeu.pliActuel.length, 1);
+      expect(etatJeu.pliActuel[0].carte.couleur, Couleur.carreau);
+      expect(etatJeu.pliActuel[0].carte.valeur, Valeur.valet);
+      expect(etatJeu.pliActuel[0].joueur, Position.est);
+
+      // Player's cards should not be affected (card was played for Est, not Sud)
+      expect(etatJeu.cartesJoueur.length, 2);
+      expect(etatJeu.cartesJouees.length, 0); // No card tracked as played by player
+
+      // Next player should be Sud (rotation horaire)
+      expect(etatJeu.joueurActuel, Position.sud);
+      
+      // Now play a card for Sud (the player)
+      final carteJoueur = Carte(couleur: Couleur.pique, valeur: Valeur.as);
+      etatJeu.jouerCarte(carteJoueur);
+      
+      // Card should be removed from player's hand
+      expect(etatJeu.cartesJoueur.length, 1);
+      expect(etatJeu.cartesJoueur[0].couleur, Couleur.coeur);
+      
+      // Card should be tracked as played by player
+      expect(etatJeu.cartesJouees.length, 1);
+      expect(etatJeu.cartesJouees[0].couleur, Couleur.pique);
+    });
+
     test('Doit terminer encheres - pas d\'annonces', () {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
