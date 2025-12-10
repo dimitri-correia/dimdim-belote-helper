@@ -248,8 +248,12 @@ class EtatJeu extends ChangeNotifier {
   }
 
   void _terminerPli() {
-    // Simple implementation: first player wins for now
     // TODO: Implement proper pli winner determination based on trump suit
+    // For now, simplified logic: first player wins
+    // In a complete implementation:
+    // 1. Get trump suit from winning bid in annonces
+    // 2. Compare cards based on trump rules
+    // 3. Handle suit following rules
     final gagnant = _premierJoueurPli ?? Position.nord;
     
     // Calculate points for this pli
@@ -295,6 +299,19 @@ class EtatJeu extends ChangeNotifier {
     return _cartesJoueesParJoueur[joueur]?.any(
       (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
     ) ?? false;
+  }
+
+  /// Check if a card has been played by any player
+  bool estCarteJoueeParQuiconque(Carte carte) {
+    for (final pos in Position.values) {
+      if (estCarteJoueeParJoueur(pos, carte)) {
+        return true;
+      }
+    }
+    // Also check current pli
+    return _pliActuel.any(
+      (cj) => cj.carte.couleur == carte.couleur && cj.carte.valeur == carte.valeur,
+    );
   }
 
   /// Get all cards for a specific player

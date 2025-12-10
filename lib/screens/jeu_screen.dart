@@ -52,6 +52,7 @@ class _JeuScreenState extends State<JeuScreen> {
     if (parametres == null) return const SizedBox.shrink();
 
     final estJoueurPrincipal = position == parametres.positionJoueur;
+    final estTourJoueur = etatJeu.joueurActuel == parametres.positionJoueur;
     final cartes = estJoueurPrincipal 
         ? etatJeu.cartesJoueur 
         : etatJeu.getCartesJoueur(position);
@@ -136,7 +137,7 @@ class _JeuScreenState extends State<JeuScreen> {
                       final estGrisee = estJoueurPrincipal && _grayerCartesJoueesJoueur && estJouee;
 
                       return ElevatedButton(
-                        onPressed: () => _jouerCarte(carte),
+                        onPressed: estTourJoueur ? () => _jouerCarte(carte) : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: estGrisee
                               ? Colors.grey.shade300
@@ -544,20 +545,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                 runSpacing: 8,
                                 children: Valeur.values.map((valeur) {
                                   final carte = Carte(couleur: couleur, valeur: valeur);
-                                  // Check if this card has been played by anyone
-                                  bool carteDejaJouee = false;
-                                  for (final pos in Position.values) {
-                                    if (etatJeu.estCarteJoueeParJoueur(pos, carte)) {
-                                      carteDejaJouee = true;
-                                      break;
-                                    }
-                                  }
-                                  // Also check if it's in the current pli
-                                  if (etatJeu.pliActuel.any((cj) => 
-                                      cj.carte.couleur == carte.couleur && 
-                                      cj.carte.valeur == carte.valeur)) {
-                                    carteDejaJouee = true;
-                                  }
+                                  final carteDejaJouee = etatJeu.estCarteJoueeParQuiconque(carte);
 
                                   return ElevatedButton(
                                     onPressed: carteDejaJouee ? null : () => _jouerCarte(carte),
