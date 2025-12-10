@@ -21,15 +21,16 @@ Cette application Flutter aide à gérer les parties de Belote Contrée en suiva
 - Types d'annonces :
   - **Passe** : Le joueur ne fait pas d'annonce
   - **Prise** : Annonce avec valeur (80-160) et couleur
+  - **Capot** : Annonce de prendre tous les plis (la plus haute enchère)
   - **Contre** : Doubler le contrat de l'équipe adverse
   - **Surcontré** : Re-doubler après un contre
 
 #### 4. État du jeu (etat_jeu.dart)
 - Gestion centralisée de l'état avec Provider
-- Paramètres de jeu
+- Paramètres de jeu (incluant position du donneur)
 - Cartes du joueur
 - Historique des annonces
-- Suivi du joueur actuel
+- Suivi du joueur actuel (basé sur la position du donneur)
 
 ### Écrans
 
@@ -52,33 +53,38 @@ Ces paramètres sont essentiels pour :
 - Savoir quand la partie se termine
 
 #### 3. Distribution (distribution_screen.dart)
-Sélection des cartes du joueur :
+Sélection des cartes du joueur et du donneur :
 - Affichage de toutes les cartes par couleur
 - Sélection interactive avec FilterChips
 - Validation : exactement 8 cartes requises
 - Code couleur : rouge pour ♥♦, noir pour ♠♣
 - Cartes sélectionnées mises en évidence
+- **Sélection du donneur** : Détermine qui parle en premier
 
 #### 4. Enchères (encheres_screen.dart)
 Gestion des annonces :
 
 **Interface intelligente** :
-- Affichage du joueur actuel
-- Indication visuelle du tour du joueur (fond vert)
+- Affichage du joueur actuel dont on saisit l'enchère
+- L'utilisateur peut saisir les enchères pour tous les joueurs
+- Le premier à parler est à la droite du donneur (selon le sens de rotation)
 - Historique complet des annonces avec nom du joueur
 
 **Options disponibles** :
 1. **Passe** : Toujours disponible
-2. **Annonce** : Nécessite 2 clics maximum
+2. **Annonce** : Choix de la valeur et de la couleur
    - Sélection de la valeur (80, 90, 100, etc.)
    - Sélection de la couleur (♠♥♦♣, SA, TA)
+   - Option **Capot** : Annonce de prendre tous les plis (plus haute enchère)
    - Validation automatique des valeurs minimales
 3. **Contre** : Disponible si annonce adverse active
 4. **Surcontré** : Disponible après un contre
 
 **Logique des enchères** :
+- Ordre de parole basé sur la position du donneur
 - Suivi automatique du tour de parole
 - Les valeurs minimales augmentent par paliers de 10
+- Le Capot bloque toute enchère supérieure
 - Détection des équipes (Nord-Sud vs Est-Ouest)
 - Le contre n'est possible que contre l'équipe adverse
 - Possibilité de réinitialiser les enchères
@@ -90,9 +96,9 @@ Gestion des annonces :
     ↓
 Paramètres (configuration)
     ↓
-Distribution (sélection des cartes)
+Distribution (sélection des cartes et du donneur)
     ↓
-Enchères (annonces)
+Enchères (annonces pour tous les joueurs)
     ↓
 Jeu (à implémenter)
 ```

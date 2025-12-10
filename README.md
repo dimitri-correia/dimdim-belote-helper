@@ -11,14 +11,17 @@ Une application Flutter pour aider à gérer vos parties de Belote Contrée.
    - Définissez votre position à la table (Nord, Sud, Est, Ouest)
    - Sélectionnez le sens de rotation (horaire ou anti-horaire)
 
-2. **Distribution** : Sélectionnez vos cartes
+2. **Distribution** : Sélectionnez vos cartes et le donneur
    - Interface intuitive pour choisir vos 8 cartes
    - Cartes organisées par couleur
    - Validation automatique (exactement 8 cartes requises)
+   - Sélection du donneur (qui a distribué les cartes)
 
 3. **Enchères** : Gérez les annonces
-   - Suivi automatique du tour de parole
-   - Possibilité d'annoncer, passer, contrer ou surcontrer
+   - Ordre de parole basé sur la position du donneur
+   - Le premier à parler est à la droite du donneur
+   - L'utilisateur peut saisir les enchères pour tous les joueurs dans l'ordre
+   - Possibilité d'annoncer (80-160), Capot, passer, contrer ou surcontrer
    - Historique complet des enchères
    - Détection intelligente des options disponibles
 
