@@ -28,6 +28,14 @@ class _JeuScreenState extends State<JeuScreen> {
     context.read<EtatJeu>().jouerCarte(carte);
   }
 
+  /// Determines if a suit color string represents a red suit (hearts or diamonds)
+  bool _estCouleurRouge(String couleur) {
+    return couleur.contains('♥') ||
+        couleur.contains('Cœur') ||
+        couleur.contains('♦') ||
+        couleur.contains('Carreau');
+  }
+
   String _obtenirOrdreJeu() {
     final etatJeu = context.read<EtatJeu>();
     final parametres = etatJeu.parametres;
@@ -310,10 +318,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                     style: TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold,
-                                      color: (etatJeu.atout!.contains('♥') ||
-                                              etatJeu.atout!.contains('Cœur') ||
-                                              etatJeu.atout!.contains('♦') ||
-                                              etatJeu.atout!.contains('Carreau'))
+                                      color: _estCouleurRouge(etatJeu.atout!)
                                           ? Colors.red
                                           : Colors.black,
                                     ),

@@ -403,14 +403,18 @@ class EtatJeu extends ChangeNotifier {
   }
 
   /// Get the atout (trump) color from the winning bid
+  /// Returns the couleur from the last prise announcement, which is the actual bid
+  /// that establishes the trump. Contre and surcontre don't change the trump,
+  /// they only affect the multiplier.
   String? get atout {
-    // Find the last prise (the actual bid) in announcements, which might be contré/surcontré
-    // We need to find the prise that is the basis of the winning announcement
-    for (int i = _annonces.length - 1; i >= 0; i--) {
-      if (_annonces[i].type == TypeAnnonce.prise && _annonces[i].couleur != null) {
-        return _annonces[i].couleur;
-      }
+    try {
+      return _annonces
+          .lastWhere(
+            (a) => a.type == TypeAnnonce.prise && a.couleur != null,
+          )
+          .couleur;
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 }
