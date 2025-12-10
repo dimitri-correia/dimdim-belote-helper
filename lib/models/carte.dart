@@ -5,6 +5,21 @@ enum Couleur {
   trefle,
 }
 
+extension CouleurExtension on Couleur {
+  String get symbole {
+    switch (this) {
+      case Couleur.pique:
+        return '♠';
+      case Couleur.coeur:
+        return '♥';
+      case Couleur.carreau:
+        return '♦';
+      case Couleur.trefle:
+        return '♣';
+    }
+  }
+}
+
 enum Valeur {
   sept,
   huit,
@@ -23,16 +38,7 @@ class Carte {
   Carte({required this.couleur, required this.valeur});
 
   String get nomCouleur {
-    switch (couleur) {
-      case Couleur.pique:
-        return '♠';
-      case Couleur.coeur:
-        return '♥';
-      case Couleur.carreau:
-        return '♦';
-      case Couleur.trefle:
-        return '♣';
-    }
+    return couleur.symbole;
   }
 
   String get nomValeur {
