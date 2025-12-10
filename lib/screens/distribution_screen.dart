@@ -201,8 +201,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                           child: Row(
                             children: [
                               Text(
-                                Carte(couleur: couleur, valeur: Valeur.as)
-                                    .nomCouleur,
+                                couleur.symbole,
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: couleur == Couleur.coeur ||

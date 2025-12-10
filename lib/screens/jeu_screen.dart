@@ -276,8 +276,7 @@ class _JeuScreenState extends State<JeuScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                Carte(couleur: couleur, valeur: Valeur.as)
-                                    .nomCouleur,
+                                couleur.symbole,
                                 style: TextStyle(
                                   fontSize: 24,
                                   color: couleur == Couleur.coeur ||

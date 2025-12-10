@@ -170,13 +170,14 @@ class EtatJeu extends ChangeNotifier {
   }
 
   void _terminerPli() {
+    // TODO: Implement proper pli winner determination based on trump suit
     // For now, just increment pli count and reset
-    // In a complete implementation, we'd determine the winner and add points
+    // In a complete implementation, we'd:
+    // 1. Determine the trump suit from the winning bid
+    // 2. Calculate which card wins (trump > suit > other)
+    // 3. Award points to the winning team
+    // 4. Set the winner as the first player for the next pli
     _nombrePlis++;
-    
-    // The winner of the pli starts the next one
-    // For simplicity, we'll just continue with the next player
-    // In a real implementation, we'd need to determine who won based on trump suit
     
     _pliActuel = [];
     // _joueurActuel is already set to the next player
