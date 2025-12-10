@@ -67,5 +67,38 @@ void main() {
       expect(Carte(couleur: Couleur.pique, valeur: Valeur.huit).pointsNonAtout, 0);
       expect(Carte(couleur: Couleur.pique, valeur: Valeur.sept).pointsNonAtout, 0);
     });
+
+    test('Total points for a full color as atout', () {
+      // A full color as atout should sum to 62 points
+      int total = 0;
+      for (final valeur in Valeur.values) {
+        total += Carte(couleur: Couleur.pique, valeur: valeur).pointsAtout;
+      }
+      expect(total, 62);
+    });
+
+    test('Total points for a full color as non-atout', () {
+      // A full color as non-atout should sum to 30 points
+      int total = 0;
+      for (final valeur in Valeur.values) {
+        total += Carte(couleur: Couleur.pique, valeur: valeur).pointsNonAtout;
+      }
+      expect(total, 30);
+    });
+
+    test('All colors have same point values', () {
+      // Verify that all colors follow the same point rules
+      for (final couleur in Couleur.values) {
+        int totalAtout = 0;
+        int totalNonAtout = 0;
+        for (final valeur in Valeur.values) {
+          final carte = Carte(couleur: couleur, valeur: valeur);
+          totalAtout += carte.pointsAtout;
+          totalNonAtout += carte.pointsNonAtout;
+        }
+        expect(totalAtout, 62, reason: 'Total atout points should be 62 for ${couleur.name}');
+        expect(totalNonAtout, 30, reason: 'Total non-atout points should be 30 for ${couleur.name}');
+      }
+    });
   });
 }
