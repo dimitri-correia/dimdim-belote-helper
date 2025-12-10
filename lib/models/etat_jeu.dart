@@ -254,7 +254,7 @@ class EtatJeu extends ChangeNotifier {
     // 1. Get trump suit from winning bid in annonces
     // 2. Compare cards based on trump rules
     // 3. Handle suit following rules
-    final gagnant = _premierJoueurPli ?? Position.nord;
+    final gagnant = _premierJoueurPli ?? _joueurActuel ?? Position.nord;
     
     // Calculate points for this pli
     int points = 0;

@@ -200,6 +200,8 @@ Manual testing should cover:
 2. **No Trump Support**: Point calculations and winner determination don't consider trump suit yet.
 3. **No Bid Integration**: The game phase doesn't yet use information from the enchères phase.
 4. **Basic UI**: The current player selection interface could be improved with better visual feedback.
+5. **No Suit Following Validation**: The card selection doesn't enforce Belote rules (e.g., following suit when required). This is intentional for this iteration to allow full flexibility in testing. Future versions should add proper game rule validation.
+6. **Performance**: The `estCarteJoueeParQuiconque` method could be optimized with a Set for O(1) lookups instead of iterating through positions. This is acceptable for 32 cards but could be improved.
 
 ## Compatibility
 
