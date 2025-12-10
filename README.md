@@ -25,7 +25,12 @@ Une application Flutter pour aider à gérer vos parties de Belote Contrée.
    - Historique complet des enchères
    - Détection intelligente des options disponibles
 
-4. **Jeu** : Phase de jeu (à implémenter)
+4. **Jeu** : Phase de jeu des cartes
+   - Affichage des informations de la partie (nombre de plis, points de chaque équipe)
+   - Suivi de l'ordre des joueurs pour savoir qui doit jouer
+   - Sélection des cartes jouées par un simple clic
+   - Bouton pour griser les cartes déjà jouées
+   - Affichage du pli en cours avec les cartes jouées
 
 ## Plateformes supportées
 
@@ -81,7 +86,8 @@ lib/
 ├── screens/                  # Écrans de l'application
 │   ├── parametres_screen.dart    # Configuration de la partie
 │   ├── distribution_screen.dart  # Sélection des cartes
-│   └── encheres_screen.dart      # Gestion des enchères
+│   ├── encheres_screen.dart      # Gestion des enchères
+│   └── jeu_screen.dart           # Phase de jeu
 └── widgets/                  # Composants réutilisables
 ```
 
