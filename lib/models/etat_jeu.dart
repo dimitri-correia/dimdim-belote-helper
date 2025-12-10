@@ -60,6 +60,7 @@ class EtatJeu extends ChangeNotifier {
   int _pointsEstOuest = 0;
   int _pointsTotauxNordSud = 0; // Total points across all mains
   int _pointsTotauxEstOuest = 0; // Total points across all mains
+  bool _mainFinalisee = false; // Track if current main has been finalized
   List<CarteJouee> _pliActuel = [];
   Position? _premierJoueurPli; // Who played first in current pli
   List<Carte> _cartesJouees = []; // All cards played by the player
@@ -171,6 +172,7 @@ class EtatJeu extends ChangeNotifier {
     _pointsEstOuest = 0;
     _pointsTotauxNordSud = 0;
     _pointsTotauxEstOuest = 0;
+    _mainFinalisee = false;
     _pliActuel = [];
     _premierJoueurPli = null;
     _cartesJouees = [];
@@ -192,6 +194,7 @@ class EtatJeu extends ChangeNotifier {
     _nombrePlis = 0;
     _pointsNordSud = 0;
     _pointsEstOuest = 0;
+    _mainFinalisee = false;
     _pliActuel = [];
     _cartesJouees = [];
     _cartesParJoueur = {};
@@ -351,8 +354,12 @@ class EtatJeu extends ChangeNotifier {
 
   /// Finalize the current main and add points to totals
   void finaliserMain() {
+    // Only finalize once per main
+    if (_mainFinalisee) return;
+    
     _pointsTotauxNordSud += _pointsNordSud;
     _pointsTotauxEstOuest += _pointsEstOuest;
+    _mainFinalisee = true;
     notifyListeners();
   }
 
@@ -361,6 +368,7 @@ class EtatJeu extends ChangeNotifier {
     _nombrePlis = 0;
     _pointsNordSud = 0;
     _pointsEstOuest = 0;
+    _mainFinalisee = false;
     _pliActuel = [];
     _premierJoueurPli = null;
     _cartesJouees = [];
