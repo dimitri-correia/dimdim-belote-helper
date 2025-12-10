@@ -63,19 +63,19 @@ class _JeuScreenState extends State<JeuScreen> {
     final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
     
     // For main player, combine current and played cards to show all 8 cards
-    // Use a Map to avoid duplicates (keyed by couleur+valeur)
+    // Use a Map to avoid duplicates (keyed by couleur.index+valeur.index)
     final Map<String, Carte> toutesLesCartesMap = {};
     
     // Add current cards
     for (final carte in cartes) {
-      final key = '${carte.couleur}_${carte.valeur}';
+      final key = '${carte.couleur.index}_${carte.valeur.index}';
       toutesLesCartesMap[key] = carte;
     }
     
     // For main player, also add played cards
     if (estJoueurPrincipal) {
       for (final carte in cartesJouees) {
-        final key = '${carte.couleur}_${carte.valeur}';
+        final key = '${carte.couleur.index}_${carte.valeur.index}';
         toutesLesCartesMap[key] = carte;
       }
     }
