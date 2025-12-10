@@ -16,8 +16,18 @@ class _EncheresScreenState extends State<EncheresScreen> {
   int? _valeurSelectionnee;
   String? _couleurSelectionnee;
   bool _estCapot = false;
-  
-  final List<int> _valeursDisponibles = [80, 90, 100, 110, 120, 130, 140, 150, 160];
+
+  final List<int> _valeursDisponibles = [
+    80,
+    90,
+    100,
+    110,
+    120,
+    130,
+    140,
+    150,
+    160
+  ];
   final List<String> _couleursDisponibles = [
     '♠ Pique',
     '♥ Cœur',
@@ -42,38 +52,39 @@ class _EncheresScreenState extends State<EncheresScreen> {
   void _mettreAJourOptions() {
     final etatJeu = Provider.of<EtatJeu>(context, listen: false);
     final annonces = etatJeu.annonces;
-    
+
     if (annonces.isEmpty) {
       _peutContrer = false;
       _peutSurcontrer = false;
       return;
     }
-    
+
     final derniereAnnonce = annonces.last;
     final joueurActuel = etatJeu.joueurActuel;
-    
+
     // On peut contrer si la dernière annonce est une prise et qu'elle n'est pas de notre équipe
     if (derniereAnnonce.type == TypeAnnonce.prise && joueurActuel != null) {
       final parametres = etatJeu.parametres;
       if (parametres != null) {
         // Nord-Sud vs Est-Ouest
-        final joueurActuelEquipeNordSud = joueurActuel == Position.nord ||
-            joueurActuel == Position.sud;
+        final joueurActuelEquipeNordSud =
+            joueurActuel == Position.nord || joueurActuel == Position.sud;
         final annonceEquipeNordSud = derniereAnnonce.joueur == Position.nord ||
             derniereAnnonce.joueur == Position.sud;
-        
+
         _peutContrer = joueurActuelEquipeNordSud != annonceEquipeNordSud;
         _peutSurcontrer = false;
       }
-    } else if (derniereAnnonce.type == TypeAnnonce.contre && joueurActuel != null) {
+    } else if (derniereAnnonce.type == TypeAnnonce.contre &&
+        joueurActuel != null) {
       // On peut surcontrer si la dernière annonce est un contre et qu'il vient de l'équipe adverse
       final parametres = etatJeu.parametres;
       if (parametres != null) {
-        final joueurActuelEquipeNordSud = joueurActuel == Position.nord ||
-            joueurActuel == Position.sud;
+        final joueurActuelEquipeNordSud =
+            joueurActuel == Position.nord || joueurActuel == Position.sud;
         final contreEquipeNordSud = derniereAnnonce.joueur == Position.nord ||
             derniereAnnonce.joueur == Position.sud;
-        
+
         _peutContrer = false;
         _peutSurcontrer = joueurActuelEquipeNordSud != contreEquipeNordSud;
       }
@@ -83,12 +94,13 @@ class _EncheresScreenState extends State<EncheresScreen> {
     }
   }
 
-  void _ajouterAnnonce(TypeAnnonce type, {int? valeur, String? couleur, bool estCapot = false}) {
+  void _ajouterAnnonce(TypeAnnonce type,
+      {int? valeur, String? couleur, bool estCapot = false}) {
     final etatJeu = context.read<EtatJeu>();
     final joueurActuel = etatJeu.joueurActuel;
-    
+
     if (joueurActuel == null) return;
-    
+
     final annonce = Annonce(
       joueur: joueurActuel,
       type: type,
@@ -96,16 +108,16 @@ class _EncheresScreenState extends State<EncheresScreen> {
       couleur: couleur,
       estCapot: estCapot,
     );
-    
+
     etatJeu.ajouterAnnonce(annonce);
-    
+
     setState(() {
       _valeurSelectionnee = null;
       _couleurSelectionnee = null;
       _estCapot = false;
       _mettreAJourOptions();
     });
-    
+
     // Check if bidding should end (last speaker's turn again with all others passed)
     // Use post-frame callback to avoid navigation during build
     if (etatJeu.doitTerminerEncheres) {
@@ -129,9 +141,9 @@ class _EncheresScreenState extends State<EncheresScreen> {
   int? _obtenirValeurMinimale() {
     final etatJeu = context.read<EtatJeu>();
     final annonces = etatJeu.annonces;
-    
+
     if (annonces.isEmpty) return 80;
-    
+
     // Si la dernière annonce est un capot, on ne peut plus enchérir
     for (int i = annonces.length - 1; i >= 0; i--) {
       if (annonces[i].type == TypeAnnonce.prise) {
@@ -143,7 +155,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
         }
       }
     }
-    
+
     return 80;
   }
 
@@ -180,15 +192,15 @@ class _EncheresScreenState extends State<EncheresScreen> {
         builder: (context, etatJeu, child) {
           final joueurActuel = etatJeu.joueurActuel;
           final parametres = etatJeu.parametres;
-          
+
           if (joueurActuel == null || parametres == null) {
             return const Center(child: Text('Erreur: données manquantes'));
           }
-          
+
           final valeurMin = _obtenirValeurMinimale();
           final peutAnnoncerCapot = _peutAnnoncerCapot();
           final doitTerminer = etatJeu.doitTerminerEncheres;
-          
+
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -203,7 +215,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                         Text(
                           'Tour de ${joueurActuel.nom}',
                           style: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -215,7 +227,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                               : '(Sélectionnez l\'enchère pour ce joueur)',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             fontStyle: FontStyle.italic,
                             color: Colors.grey.shade700,
                           ),
@@ -225,13 +237,13 @@ class _EncheresScreenState extends State<EncheresScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Historique des annonces
                 if (etatJeu.annonces.isNotEmpty) ...[
                   const Text(
                     'Historique des enchères:',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -258,8 +270,8 @@ class _EncheresScreenState extends State<EncheresScreen> {
                   ),
                   const SizedBox(height: 16),
                 ],
-                
-                // Show message if bidding should end, otherwise show bidding options  
+
+                // Show message if bidding should end, otherwise show bidding options
                 if (doitTerminer) ...[
                   Card(
                     color: Colors.green.shade50,
@@ -276,7 +288,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                           const Text(
                             'Les enchères sont terminées',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
@@ -286,7 +298,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                             'Tous les autres joueurs ont passé.\nLe jeu va commencer.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               color: Colors.grey.shade700,
                             ),
                           ),
@@ -295,7 +307,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                   ),
                 ],
-                
+
                 // Bouton Passe
                 if (!doitTerminer)
                   ElevatedButton(
@@ -306,12 +318,12 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                     child: const Text(
                       'Passe',
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 15),
                     ),
-                ),
-                
+                  ),
+
                 if (!doitTerminer) const SizedBox(height: 12),
-                
+
                 // Bouton Contre
                 if (!doitTerminer && _peutContrer)
                   ElevatedButton(
@@ -322,10 +334,10 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                     child: const Text(
                       'Contre',
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 15),
                     ),
                   ),
-                
+
                 if (!doitTerminer && _peutSurcontrer)
                   ElevatedButton(
                     onPressed: () => _ajouterAnnonce(TypeAnnonce.surcontre),
@@ -335,25 +347,25 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                     child: const Text(
                       'Surcontré',
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 15),
                     ),
                   ),
-                
+
                 if (!doitTerminer) const SizedBox(height: 12),
                 if (!doitTerminer) const Divider(),
                 if (!doitTerminer) const SizedBox(height: 12),
-                
+
                 // Section Prise
                 if (!doitTerminer)
                   const Text(
                     'Faire une annonce:',
                     style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
                 if (!doitTerminer) const SizedBox(height: 12),
-                
+
                 // Checkbox Capot
                 if (!doitTerminer && peutAnnoncerCapot)
                   CheckboxListTile(
@@ -372,14 +384,55 @@ class _EncheresScreenState extends State<EncheresScreen> {
                       });
                     },
                   ),
-                
+
                 if (!doitTerminer)
                   Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Valeurs
-                      if (!_estCapot)
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Valeurs
+                        if (!_estCapot)
+                          Expanded(
+                            child: Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Valeur',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Expanded(
+                                      child: ListView(
+                                        children: _valeursDisponibles
+                                            .where((v) =>
+                                                valeurMin != null &&
+                                                v >= valeurMin)
+                                            .map((valeur) {
+                                          return RadioListTile<int>(
+                                            title: Text(valeur.toString()),
+                                            value: valeur,
+                                            groupValue: _valeurSelectionnee,
+                                            dense: true,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _valeurSelectionnee = value;
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (!_estCapot) const SizedBox(width: 8),
+                        // Couleurs
                         Expanded(
                           child: Card(
                             child: Padding(
@@ -388,23 +441,23 @@ class _EncheresScreenState extends State<EncheresScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Valeur',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    'Couleur',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8),
                                   Expanded(
                                     child: ListView(
-                                      children: _valeursDisponibles
-                                          .where((v) => valeurMin != null && v >= valeurMin)
-                                          .map((valeur) {
-                                        return RadioListTile<int>(
-                                          title: Text(valeur.toString()),
-                                          value: valeur,
-                                          groupValue: _valeurSelectionnee,
+                                      children:
+                                          _couleursDisponibles.map((couleur) {
+                                        return RadioListTile<String>(
+                                          title: Text(couleur),
+                                          value: couleur,
+                                          groupValue: _couleurSelectionnee,
                                           dense: true,
                                           onChanged: (value) {
                                             setState(() {
-                                              _valeurSelectionnee = value;
+                                              _couleurSelectionnee = value;
                                             });
                                           },
                                         );
@@ -416,53 +469,19 @@ class _EncheresScreenState extends State<EncheresScreen> {
                             ),
                           ),
                         ),
-                      if (!_estCapot) const SizedBox(width: 8),
-                      // Couleurs
-                      Expanded(
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Couleur',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Expanded(
-                                  child: ListView(
-                                    children: _couleursDisponibles.map((couleur) {
-                                      return RadioListTile<String>(
-                                        title: Text(couleur),
-                                        value: couleur,
-                                        groupValue: _couleurSelectionnee,
-                                        dense: true,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _couleurSelectionnee = value;
-                                          });
-                                        },
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                
+
                 if (!doitTerminer) const SizedBox(height: 12),
-                
+
                 // Bouton Annoncer
                 if (!doitTerminer)
                   ElevatedButton(
                     onPressed: (_estCapot && _couleurSelectionnee != null) ||
-                            (!_estCapot && _valeurSelectionnee != null && _couleurSelectionnee != null)
+                            (!_estCapot &&
+                                _valeurSelectionnee != null &&
+                                _couleurSelectionnee != null)
                         ? () {
                             _ajouterAnnonce(
                               TypeAnnonce.prise,
@@ -478,14 +497,14 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                     child: Text(
                       _estCapot ? 'Annoncer Capot' : 'Annoncer',
-                      style: const TextStyle(fontSize: 18),
+                      style: const TextStyle(fontSize: 15),
                     ),
                   ),
-                
+
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 12),
-                
+
                 // Button to proceed to game phase
                 if (etatJeu.annonces.isNotEmpty)
                   ElevatedButton.icon(
@@ -500,7 +519,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     icon: const Icon(Icons.play_arrow),
                     label: const Text(
                       'Commencer le jeu',
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 15),
                     ),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(16),

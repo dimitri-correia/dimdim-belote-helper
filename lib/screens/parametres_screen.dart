@@ -38,7 +38,7 @@ class _ParametresScreenState extends State<ParametresScreen> {
                     const Text(
                       'Condition de fin',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -106,7 +106,7 @@ class _ParametresScreenState extends State<ParametresScreen> {
                     const Text(
                       'Votre position',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -142,7 +142,7 @@ class _ParametresScreenState extends State<ParametresScreen> {
                     const Text(
                       'Sens de rotation',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -180,9 +180,9 @@ class _ParametresScreenState extends State<ParametresScreen> {
                   positionJoueur: _positionJoueur,
                   sensRotation: _sensRotation,
                 );
-                
+
                 context.read<EtatJeu>().definirParametres(parametres);
-                
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -195,7 +195,7 @@ class _ParametresScreenState extends State<ParametresScreen> {
               ),
               child: const Text(
                 'Commencer',
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: 15),
               ),
             ),
           ],

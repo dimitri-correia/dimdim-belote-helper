@@ -69,6 +69,9 @@ class EtatJeu extends ChangeNotifier {
   Map<Position, List<Carte>> _cartesParJoueur = {};
   Map<Position, List<Carte>> _cartesJoueesParJoueur = {};
   List<PliTermine> _plisTermines = [];
+  
+  // Track which colors each player cannot play anymore
+  Map<Position, Set<Couleur>> _couleursManquantes = {};
 
   ParametresJeu? get parametres => _parametres;
   List<Carte> get cartesJoueur => _cartesJoueur;
@@ -85,6 +88,7 @@ class EtatJeu extends ChangeNotifier {
   Map<Position, List<Carte>> get cartesParJoueur => _cartesParJoueur;
   Map<Position, List<Carte>> get cartesJoueesParJoueur => _cartesJoueesParJoueur;
   List<PliTermine> get plisTermines => _plisTermines;
+  Map<Position, Set<Couleur>> get couleursManquantes => _couleursManquantes;
 
   /// Check if bidding should end because it's the turn of the last player
   /// who made a non-pass bid and all others have passed since then.
@@ -179,7 +183,184 @@ class EtatJeu extends ChangeNotifier {
     _cartesParJoueur = {};
     _cartesJoueesParJoueur = {};
     _plisTermines = [];
+    _couleursManquantes = {};
     notifyListeners();
+  }
+
+  /// Get the trump suit's couleur enum value from the atout string
+  Couleur? get atoutCouleur {
+    if (atout == null) return null;
+    
+    if (atout!.contains('♠') || atout!.contains('Pique')) return Couleur.pique;
+    if (atout!.contains('♥') || atout!.contains('Cœur')) return Couleur.coeur;
+    if (atout!.contains('♦') || atout!.contains('Carreau')) return Couleur.carreau;
+    if (atout!.contains('♣') || atout!.contains('Trèfle')) return Couleur.trefle;
+    
+    return null;
+  }
+
+  /// Compare two cards to determine which is stronger
+  /// Returns -1 if carte1 wins, 1 if carte2 wins, 0 if equal
+  int _comparerCartes(Carte carte1, Carte carte2, Couleur? couleurDemandee) {
+    final trumpCouleur = atoutCouleur;
+    final carte1EstAtout = trumpCouleur != null && carte1.couleur == trumpCouleur;
+    final carte2EstAtout = trumpCouleur != null && carte2.couleur == trumpCouleur;
+    
+    // If one is trump and the other isn't, trump wins
+    if (carte1EstAtout && !carte2EstAtout) return -1;
+    if (carte2EstAtout && !carte1EstAtout) return 1;
+    
+    // If both are trump, compare trump values
+    if (carte1EstAtout && carte2EstAtout) {
+      return _comparerValeursAtout(carte1.valeur, carte2.valeur);
+    }
+    
+    // If neither is trump, only cards of the requested suit can win
+    final carte1EstCouleurDemandee = couleurDemandee != null && carte1.couleur == couleurDemandee;
+    final carte2EstCouleurDemandee = couleurDemandee != null && carte2.couleur == couleurDemandee;
+    
+    if (carte1EstCouleurDemandee && !carte2EstCouleurDemandee) return -1;
+    if (carte2EstCouleurDemandee && !carte1EstCouleurDemandee) return 1;
+    
+    // Both are same suit (requested), compare non-trump values
+    if (carte1EstCouleurDemandee && carte2EstCouleurDemandee) {
+      return _comparerValeursNonAtout(carte1.valeur, carte2.valeur);
+    }
+    
+    // Neither follows suit, first card wins by default
+    return -1;
+  }
+
+  /// Compare trump card values (higher rank wins)
+  int _comparerValeursAtout(Valeur v1, Valeur v2) {
+    const ordre = [
+      Valeur.sept,
+      Valeur.huit,
+      Valeur.dame,
+      Valeur.roi,
+      Valeur.dix,
+      Valeur.as,
+      Valeur.neuf,
+      Valeur.valet,
+    ];
+    
+    final index1 = ordre.indexOf(v1);
+    final index2 = ordre.indexOf(v2);
+    
+    if (index1 > index2) return -1;
+    if (index1 < index2) return 1;
+    return 0;
+  }
+
+  /// Compare non-trump card values (higher rank wins)
+  int _comparerValeursNonAtout(Valeur v1, Valeur v2) {
+    const ordre = [
+      Valeur.sept,
+      Valeur.huit,
+      Valeur.neuf,
+      Valeur.valet,
+      Valeur.dame,
+      Valeur.roi,
+      Valeur.dix,
+      Valeur.as,
+    ];
+    
+    final index1 = ordre.indexOf(v1);
+    final index2 = ordre.indexOf(v2);
+    
+    if (index1 > index2) return -1;
+    if (index1 < index2) return 1;
+    return 0;
+  }
+
+  /// Total points available in a Belote Contrée hand
+  /// 
+  /// In Belote Contrée, there are exactly 162 total points in a complete hand:
+  /// - 3 non-trump suits: 3 × 30 = 90 points
+  /// - 1 trump suit: 62 points
+  /// - Dix de der (last pli bonus): 10 points
+  /// Total: 90 + 62 + 10 = 162 points
+  /// 
+  /// However, when a contract fails, the defense scores 160 points + the announce value.
+  /// This represents all the hand points (without separately counting the actual plis won).
+  /// The 160 excludes the dix de der which is counted separately in actual play.
+  static const int pointsDefenseContratChute = 160;
+
+  /// Check if a card can be legally played based on Belote rules
+  bool peutJouerCarte(Carte carte) {
+    if (_joueurActuel == null || _parametres == null) return false;
+    
+    // Only the current player's cards can be played
+    if (_joueurActuel != _parametres!.positionJoueur) return false;
+    
+    // Check if player has this card
+    if (!_cartesJoueur.any((c) => c.couleur == carte.couleur && c.valeur == carte.valeur)) {
+      return false;
+    }
+    
+    // First card of pli can always be played
+    if (_pliActuel.isEmpty) return true;
+    
+    final couleurDemandee = _pliActuel.first.carte.couleur;
+    final trumpCouleur = atoutCouleur;
+    
+    // Check if player has any cards of requested suit
+    final aCartesCouleurDemandee = _cartesJoueur.any((c) => c.couleur == couleurDemandee);
+    
+    // Must follow suit if possible
+    if (aCartesCouleurDemandee) {
+      return carte.couleur == couleurDemandee;
+    }
+    
+    // If can't follow suit and trump exists, must play trump if possible
+    if (trumpCouleur != null) {
+      final aCartesAtout = _cartesJoueur.any((c) => c.couleur == trumpCouleur);
+      
+      if (aCartesAtout) {
+        // Must play trump
+        if (carte.couleur != trumpCouleur) return false;
+        
+        // Check if need to play higher trump (monter)
+        final atoutsJoues = _pliActuel
+            .where((cj) => cj.carte.couleur == trumpCouleur)
+            .map((cj) => cj.carte)
+            .toList();
+        
+        if (atoutsJoues.isNotEmpty) {
+          // Find the highest trump played
+          Carte plusHautAtout = atoutsJoues.first;
+          for (final atout in atoutsJoues) {
+            if (_comparerCartes(atout, plusHautAtout, null) < 0) {
+              plusHautAtout = atout;
+            }
+          }
+          
+          // Check if player has a higher trump
+          final atoutsDisponibles = _cartesJoueur.where((c) => c.couleur == trumpCouleur).toList();
+          final aPlusHautAtout = atoutsDisponibles.any(
+            (c) => _comparerCartes(c, plusHautAtout, null) < 0
+          );
+          
+          // If player has higher trump, must play it
+          if (aPlusHautAtout) {
+            return _comparerCartes(carte, plusHautAtout, null) < 0;
+          }
+        }
+        
+        return true;
+      }
+    }
+    
+    // If can't follow suit and no trump (or no trump cards), can play any card
+    return true;
+  }
+
+  /// Get list of valid cards that can be played
+  List<Carte> getCartesValides() {
+    if (_joueurActuel == null || _parametres == null) return [];
+    if (_joueurActuel != _parametres!.positionJoueur) return [];
+    
+    return _cartesJoueur.where((carte) => peutJouerCarte(carte)).toList();
   }
 
   /// Start the game phase
@@ -204,6 +385,7 @@ class EtatJeu extends ChangeNotifier {
     // Initialize cards for all players
     for (final position in Position.values) {
       _cartesJoueesParJoueur[position] = [];
+      _couleursManquantes[position] = {};
       if (position == _parametres?.positionJoueur) {
         _cartesParJoueur[position] = List.from(_cartesJoueur);
       } else {
@@ -218,9 +400,27 @@ class EtatJeu extends ChangeNotifier {
   void jouerCarte(Carte carte) {
     if (_joueurActuel == null) return;
 
+    // Validate card can be played (for the player only)
+    if (_joueurActuel == _parametres?.positionJoueur) {
+      if (!peutJouerCarte(carte)) {
+        // Invalid card play - should not happen with proper UI
+        return;
+      }
+    }
+
     // Track first player of the pli
     if (_pliActuel.isEmpty) {
       _premierJoueurPli = _joueurActuel;
+    }
+
+    // Detect if player didn't follow suit (missing color)
+    if (_pliActuel.isNotEmpty) {
+      final couleurDemandee = _pliActuel.first.carte.couleur;
+      if (carte.couleur != couleurDemandee) {
+        // Player didn't follow suit, mark this color as missing
+        _couleursManquantes[_joueurActuel!] ??= {};
+        _couleursManquantes[_joueurActuel!]!.add(couleurDemandee);
+      }
     }
 
     // Add to current pli
@@ -257,19 +457,31 @@ class EtatJeu extends ChangeNotifier {
   }
 
   void _terminerPli() {
-    // TODO: Implement proper pli winner determination based on trump suit
-    // For now, simplified logic: first player wins
-    // In a complete implementation:
-    // 1. Get trump suit from winning bid in annonces
-    // 2. Compare cards based on trump rules
-    // 3. Handle suit following rules
-    final gagnant = _premierJoueurPli ?? _joueurActuel ?? Position.nord;
+    if (_pliActuel.isEmpty || _premierJoueurPli == null) return;
+    
+    // Determine winner by comparing cards
+    final couleurDemandee = _pliActuel.first.carte.couleur;
+    CarteJouee carteGagnante = _pliActuel.first;
+    
+    for (int i = 1; i < _pliActuel.length; i++) {
+      final carteJouee = _pliActuel[i];
+      if (_comparerCartes(carteJouee.carte, carteGagnante.carte, couleurDemandee) < 0) {
+        carteGagnante = carteJouee;
+      }
+    }
+    
+    final gagnant = carteGagnante.joueur;
     
     // Calculate points for this pli
+    final trumpCouleur = atoutCouleur;
     int points = 0;
     for (final carteJouee in _pliActuel) {
-      // For now, use non-trump points (will need trump info later)
-      points += carteJouee.carte.pointsNonAtout;
+      // Use trump points if card is trump, otherwise non-trump points
+      if (trumpCouleur != null && carteJouee.carte.couleur == trumpCouleur) {
+        points += carteJouee.carte.pointsAtout;
+      } else {
+        points += carteJouee.carte.pointsNonAtout;
+      }
     }
     
     // Add 10 points for the last pli (dix de der)
@@ -329,27 +541,125 @@ class EtatJeu extends ChangeNotifier {
   }
 
   /// Calculate current pli points
-  /// TODO: Use trump-aware point calculation when trump logic is implemented
   int get pointsPliActuel {
+    final trumpCouleur = atoutCouleur;
     int points = 0;
     for (final carteJouee in _pliActuel) {
-      // For now, use non-trump points (consistent with _terminerPli)
-      points += carteJouee.carte.pointsNonAtout;
+      // Use trump points if card is trump, otherwise non-trump points
+      if (trumpCouleur != null && carteJouee.carte.couleur == trumpCouleur) {
+        points += carteJouee.carte.pointsAtout;
+      } else {
+        points += carteJouee.carte.pointsNonAtout;
+      }
     }
     return points;
   }
 
   /// Get the current winner of the pli in progress
-  /// TODO: Implement proper pli winner determination based on trump suit
   Position? get gagnantPliActuel {
     if (_pliActuel.isEmpty || _premierJoueurPli == null) return null;
     
-    // For now, simplified logic: first player wins (consistent with _terminerPli)
-    // In a complete implementation:
-    // 1. Get trump suit from winning bid in annonces
-    // 2. Compare cards based on trump rules
-    // 3. Handle suit following rules
-    return _premierJoueurPli;
+    final couleurDemandee = _pliActuel.first.carte.couleur;
+    CarteJouee carteGagnante = _pliActuel.first;
+    
+    for (int i = 1; i < _pliActuel.length; i++) {
+      final carteJouee = _pliActuel[i];
+      if (_comparerCartes(carteJouee.carte, carteGagnante.carte, couleurDemandee) < 0) {
+        carteGagnante = carteJouee;
+      }
+    }
+    
+    return carteGagnante.joueur;
+  }
+
+  /// Get the multiplier for the current contract (contre, surcontre)
+  int get multiplicateurContrat {
+    final derniere = annonceGagnante;
+    if (derniere == null) return 1;
+    
+    if (derniere.type == TypeAnnonce.surcontre) return 4;
+    if (derniere.type == TypeAnnonce.contre) return 2;
+    return 1;
+  }
+
+  /// Get the announce points (value of the bid)
+  int get pointsAnnonce {
+    // Find the last prise announcement
+    for (int i = _annonces.length - 1; i >= 0; i--) {
+      final annonce = _annonces[i];
+      if (annonce.type == TypeAnnonce.prise) {
+        if (annonce.estCapot) {
+          return 250; // Capot is worth 250 points
+        }
+        return annonce.valeur ?? 0;
+      }
+    }
+    return 0;
+  }
+
+  /// Get the team that made the winning bid
+  Position? get equipePrenante {
+    // Find the last prise announcement
+    for (int i = _annonces.length - 1; i >= 0; i--) {
+      final annonce = _annonces[i];
+      if (annonce.type == TypeAnnonce.prise) {
+        return annonce.joueur;
+      }
+    }
+    return null;
+  }
+
+  /// Check if Nord-Sud made the contract
+  bool get nordSudEstPrenante {
+    final prenante = equipePrenante;
+    if (prenante == null) return false;
+    return prenante == Position.nord || prenante == Position.sud;
+  }
+
+  /// Calculate detailed points breakdown for finalization
+  Map<String, dynamic> calculerPointsDetailles() {
+    final annonce = pointsAnnonce;
+    final mult = multiplicateurContrat;
+    final prenantNordSud = nordSudEstPrenante;
+    
+    // Check if contract was made
+    final pointsPrenante = prenantNordSud ? _pointsNordSud : _pointsEstOuest;
+    final pointsDefense = prenantNordSud ? _pointsEstOuest : _pointsNordSud;
+    final contractReussi = pointsPrenante >= annonce;
+    
+    int pointsGagnesNordSud = 0;
+    int pointsGagnesEstOuest = 0;
+    
+    if (contractReussi) {
+      // Contract made - prenante gets contract + hand points
+      if (prenantNordSud) {
+        pointsGagnesNordSud = (annonce + _pointsNordSud) * mult;
+        pointsGagnesEstOuest = 0; // Defense gets nothing when contract is made
+      } else {
+        pointsGagnesEstOuest = (annonce + _pointsEstOuest) * mult;
+        pointsGagnesNordSud = 0;
+      }
+    } else {
+      // Contract failed - defense gets all hand points + contract value
+      if (prenantNordSud) {
+        pointsGagnesEstOuest = (pointsDefenseContratChute + annonce) * mult;
+        pointsGagnesNordSud = 0;
+      } else {
+        pointsGagnesNordSud = (pointsDefenseContratChute + annonce) * mult;
+        pointsGagnesEstOuest = 0;
+      }
+    }
+    
+    return {
+      'contractReussi': contractReussi,
+      'annonce': annonce,
+      'multiplicateur': mult,
+      'prenantNordSud': prenantNordSud,
+      'pointsMainNordSud': _pointsNordSud,
+      'pointsMainEstOuest': _pointsEstOuest,
+      'pointsGagnesNordSud': pointsGagnesNordSud,
+      'pointsGagnesEstOuest': pointsGagnesEstOuest,
+    };
   }
 
   /// Finalize the current main and add points to totals
@@ -357,8 +667,9 @@ class EtatJeu extends ChangeNotifier {
     // Only finalize once per main
     if (_mainFinalisee) return;
     
-    _pointsTotauxNordSud += _pointsNordSud;
-    _pointsTotauxEstOuest += _pointsEstOuest;
+    final details = calculerPointsDetailles();
+    _pointsTotauxNordSud += details['pointsGagnesNordSud'] as int;
+    _pointsTotauxEstOuest += details['pointsGagnesEstOuest'] as int;
     _mainFinalisee = true;
     notifyListeners();
   }
@@ -376,6 +687,7 @@ class EtatJeu extends ChangeNotifier {
     _cartesJoueesParJoueur = {};
     _plisTermines = [];
     _annonces = [];
+    _couleursManquantes = {};
     
     // Reset to first player
     if (_parametres?.positionDonneur != null) {
@@ -386,5 +698,36 @@ class EtatJeu extends ChangeNotifier {
     }
     
     notifyListeners();
+  }
+
+  /// Get the winning announcement (the last prise/contre/surcontre)
+  Annonce? get annonceGagnante {
+    if (_annonces.isEmpty) return null;
+    
+    // Find the last non-pass announcement
+    for (int i = _annonces.length - 1; i >= 0; i--) {
+      if (_annonces[i].type != TypeAnnonce.passe) {
+        return _annonces[i];
+      }
+    }
+    
+    return null;
+  }
+
+  /// Get the atout (trump) color from the winning bid
+  /// Returns the couleur from the last prise announcement, which is the actual bid
+  /// that establishes the trump. Contre and surcontre don't change the trump,
+  /// they only affect the multiplier.
+  String? get atout {
+    // Check if there's any prise with a couleur
+    if (!_annonces.any((a) => a.type == TypeAnnonce.prise && a.couleur != null)) {
+      return null;
+    }
+    
+    return _annonces
+        .lastWhere(
+          (a) => a.type == TypeAnnonce.prise && a.couleur != null,
+        )
+        .couleur;
   }
 }
