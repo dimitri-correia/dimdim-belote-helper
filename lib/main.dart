@@ -53,7 +53,7 @@ class EcranAccueil extends StatelessWidget {
                 'Bienvenue dans l\'assistant\nBelote Contrée',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -62,7 +62,7 @@ class EcranAccueil extends StatelessWidget {
                 'Cette application vous aide à gérer vos parties\nde Belote Contrée',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Colors.grey,
                 ),
               ),
@@ -84,7 +84,7 @@ class EcranAccueil extends StatelessWidget {
                 ),
                 child: const Text(
                   'Nouvelle partie',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 17),
                 ),
               ),
               const SizedBox(height: 24),

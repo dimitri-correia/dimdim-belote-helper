@@ -28,6 +28,14 @@ class _JeuScreenState extends State<JeuScreen> {
     context.read<EtatJeu>().jouerCarte(carte);
   }
 
+  /// Determines if a suit color string represents a red suit (hearts or diamonds)
+  bool _estCouleurRouge(String couleur) {
+    return couleur.contains('♥') ||
+        couleur.contains('Cœur') ||
+        couleur.contains('♦') ||
+        couleur.contains('Carreau');
+  }
+
   String _obtenirOrdreJeu() {
     final etatJeu = context.read<EtatJeu>();
     final parametres = etatJeu.parametres;
@@ -44,7 +52,7 @@ class _JeuScreenState extends State<JeuScreen> {
           : joueur.precedent;
     }
 
-    return 'Ordre: ${ordre.map((p) => p.nom).join(' → ')}';
+    return ordre.map((p) => p.nom).join(' → ');
   }
 
   Widget _buildCartesJoueur(EtatJeu etatJeu, Position position) {
@@ -119,7 +127,7 @@ class _JeuScreenState extends State<JeuScreen> {
                     Text(
                       couleur.symbole,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: couleur == Couleur.coeur ||
                                 couleur == Couleur.carreau
                             ? Colors.red
@@ -131,7 +139,7 @@ class _JeuScreenState extends State<JeuScreen> {
                       carte.nomValeur,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -141,7 +149,7 @@ class _JeuScreenState extends State<JeuScreen> {
                 Text(
                   'Jouée',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9,
                     color: Colors.grey.shade600,
                     fontStyle: FontStyle.italic,
                   ),
@@ -158,7 +166,7 @@ class _JeuScreenState extends State<JeuScreen> {
         Text(
           estJoueurPrincipal ? 'Vos cartes:' : 'Cartes de ${position.nom}:',
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -211,7 +219,7 @@ class _JeuScreenState extends State<JeuScreen> {
                           const Text(
                             'Points totaux de la partie',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -224,7 +232,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     'Nord-Sud',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: (parametres.positionJoueur ==
                                                   Position.nord ||
                                               parametres.positionJoueur ==
@@ -237,7 +245,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     '${etatJeu.pointsTotauxNordSud}',
                                     style: const TextStyle(
-                                      fontSize: 32,
+                                      fontSize: 28,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.green,
                                     ),
@@ -247,7 +255,7 @@ class _JeuScreenState extends State<JeuScreen> {
                               const Text(
                                 '—',
                                 style: TextStyle(
-                                  fontSize: 32,
+                                  fontSize: 28,
                                   fontWeight: FontWeight.w300,
                                   color: Colors.grey,
                                 ),
@@ -257,7 +265,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     'Est-Ouest',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: (parametres.positionJoueur ==
                                                   Position.est ||
                                               parametres.positionJoueur ==
@@ -270,7 +278,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     '${etatJeu.pointsTotauxEstOuest}',
                                     style: const TextStyle(
-                                      fontSize: 32,
+                                      fontSize: 28,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.orange,
                                     ),
@@ -285,6 +293,113 @@ class _JeuScreenState extends State<JeuScreen> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Announcements and Atout section
+                  if (etatJeu.annonces.isNotEmpty) ...[
+                    Card(
+                      color: Colors.amber.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Atout',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (etatJeu.atout != null)
+                                  Text(
+                                    etatJeu.atout!,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: _estCouleurRouge(etatJeu.atout!)
+                                          ? Colors.red
+                                          : Colors.black,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Annonces:',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: etatJeu.annonces.map((annonce) {
+                                  final isWinning =
+                                      etatJeu.annonceGagnante == annonce;
+                                  return Container(
+                                    margin: const EdgeInsets.only(right: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isWinning
+                                          ? Colors.green.shade100
+                                          : Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: isWinning
+                                          ? Border.all(
+                                              color: Colors.green.shade700,
+                                              width: 2,
+                                            )
+                                          : null,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 12,
+                                          child: Text(
+                                            annonce.joueur.nom[0],
+                                            style:
+                                                const TextStyle(fontSize: 11),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          annonce.texte,
+                                          style: TextStyle(
+                                            fontWeight: isWinning
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        if (isWinning) ...[
+                                          const SizedBox(width: 6),
+                                          Icon(
+                                            Icons.star,
+                                            size: 16,
+                                            color: Colors.green.shade700,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
                   // Current main points
                   Card(
                     color: Colors.blue.shade50,
@@ -295,7 +410,7 @@ class _JeuScreenState extends State<JeuScreen> {
                           Text(
                             'Points de cette main',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey.shade700,
                             ),
@@ -311,7 +426,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                         ? 'Plis'
                                         : 'Plis joués',
                                     style: const TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -320,7 +435,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                         ? '${etatJeu.nombrePlis}/${parametres.valeurFin}'
                                         : '${etatJeu.nombrePlis}',
                                     style: const TextStyle(
-                                      fontSize: 24,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blue,
                                     ),
@@ -330,7 +445,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                     Text(
                                       '(${parametres.valeurFin} pts pour gagner)',
                                       style: TextStyle(
-                                        fontSize: 10,
+                                        fontSize: 9,
                                         color: Colors.grey.shade600,
                                       ),
                                     ),
@@ -341,7 +456,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     'Nord-Sud',
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: (parametres.positionJoueur ==
                                                   Position.nord ||
                                               parametres.positionJoueur ==
@@ -353,7 +468,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     '${etatJeu.pointsNordSud} pts',
                                     style: const TextStyle(
-                                      fontSize: 20,
+                                      fontSize: 17,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.green,
                                     ),
@@ -365,7 +480,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     'Est-Ouest',
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: (parametres.positionJoueur ==
                                                   Position.est ||
                                               parametres.positionJoueur ==
@@ -377,7 +492,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     '${etatJeu.pointsEstOuest} pts',
                                     style: const TextStyle(
-                                      fontSize: 20,
+                                      fontSize: 17,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.orange,
                                     ),
@@ -403,9 +518,9 @@ class _JeuScreenState extends State<JeuScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Text(
-                            'Tour de ${joueurActuel.nom}',
+                            'Tour de ${joueurActuel.nom} ${estTourJoueur ? "(vous)" : ""}',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: estTourJoueur
                                   ? Colors.green.shade900
@@ -414,20 +529,9 @@ class _JeuScreenState extends State<JeuScreen> {
                             textAlign: TextAlign.center,
                           ),
                           Text(
-                            estTourJoueur
-                                ? '(C\'est vous)'
-                                : '(Sélectionnez la carte pour ce joueur)',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                          Text(
                             _obtenirOrdreJeu(),
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               color: Colors.grey.shade700,
                             ),
                             textAlign: TextAlign.center,
@@ -446,7 +550,7 @@ class _JeuScreenState extends State<JeuScreen> {
                         const Text(
                           'Pli en cours:',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -455,7 +559,7 @@ class _JeuScreenState extends State<JeuScreen> {
                             Text(
                               '${etatJeu.pointsPliActuel} pts',
                               style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.green,
                               ),
@@ -465,7 +569,7 @@ class _JeuScreenState extends State<JeuScreen> {
                               Text(
                                 '• Prend: ${etatJeu.gagnantPliActuel!.nom}',
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.orange,
                                 ),
@@ -518,7 +622,7 @@ class _JeuScreenState extends State<JeuScreen> {
                             Text(
                               'Afficher tous les plis (${etatJeu.plisTermines.length}):',
                               style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -543,7 +647,7 @@ class _JeuScreenState extends State<JeuScreen> {
                     const Text(
                       'Historique des plis:',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -569,14 +673,14 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     'Pli ${index + 1}${isLastPli ? " (dernier)" : ""}:',
                                     style: const TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
                                     '${pli.points} pts',
                                     style: const TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.green,
                                     ),
@@ -611,7 +715,7 @@ class _JeuScreenState extends State<JeuScreen> {
                               Text(
                                 'Gagné par: ${pli.gagnant.nom}',
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.orange,
                                 ),
@@ -634,7 +738,7 @@ class _JeuScreenState extends State<JeuScreen> {
                           const Text(
                             'Afficher cartes jouées par les autres:',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -657,7 +761,7 @@ class _JeuScreenState extends State<JeuScreen> {
                     const Text(
                       'Cartes jouées par les autres joueurs:',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -679,7 +783,7 @@ class _JeuScreenState extends State<JeuScreen> {
                               Text(
                                 '${position.nom}:',
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -721,7 +825,7 @@ class _JeuScreenState extends State<JeuScreen> {
                     Text(
                       'Sélectionnez la carte pour ${joueurActuel.nom}:',
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.orange,
                       ),
@@ -730,7 +834,7 @@ class _JeuScreenState extends State<JeuScreen> {
                     Text(
                       'Choisissez parmi toutes les cartes non jouées:',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Colors.grey.shade700,
                         fontStyle: FontStyle.italic,
                       ),
@@ -748,7 +852,7 @@ class _JeuScreenState extends State<JeuScreen> {
                               Text(
                                 couleur.symbole,
                                 style: TextStyle(
-                                  fontSize: 24,
+                                  fontSize: 20,
                                   color: couleur == Couleur.coeur ||
                                           couleur == Couleur.carreau
                                       ? Colors.red
@@ -788,7 +892,7 @@ class _JeuScreenState extends State<JeuScreen> {
                                       carte.nomValeur,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                       ),
                                     ),
                                   );

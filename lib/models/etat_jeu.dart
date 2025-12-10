@@ -387,4 +387,35 @@ class EtatJeu extends ChangeNotifier {
     
     notifyListeners();
   }
+
+  /// Get the winning announcement (the last prise/contre/surcontre)
+  Annonce? get annonceGagnante {
+    if (_annonces.isEmpty) return null;
+    
+    // Find the last non-pass announcement
+    for (int i = _annonces.length - 1; i >= 0; i--) {
+      if (_annonces[i].type != TypeAnnonce.passe) {
+        return _annonces[i];
+      }
+    }
+    
+    return null;
+  }
+
+  /// Get the atout (trump) color from the winning bid
+  /// Returns the couleur from the last prise announcement, which is the actual bid
+  /// that establishes the trump. Contre and surcontre don't change the trump,
+  /// they only affect the multiplier.
+  String? get atout {
+    // Check if there's any prise with a couleur
+    if (!_annonces.any((a) => a.type == TypeAnnonce.prise && a.couleur != null)) {
+      return null;
+    }
+    
+    return _annonces
+        .lastWhere(
+          (a) => a.type == TypeAnnonce.prise && a.couleur != null,
+        )
+        .couleur;
+  }
 }

@@ -97,7 +97,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                 child: Text(
                   'Sélectionnez vos 8 cartes (${_cartesSelectionnees.length}/8)',
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -126,7 +126,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                               Text(
                                 cartesCouleur.first.nomCouleur,
                                 style: TextStyle(
-                                  fontSize: 24,
+                                  fontSize: 20,
                                   color: couleur == Couleur.coeur ||
                                           couleur == Couleur.carreau
                                       ? Colors.red
@@ -137,7 +137,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                               Text(
                                 'Atout: $pointsAtout pts | Non-atout: $pointsNonAtout pts',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   color: Colors.grey.shade700,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -190,7 +190,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                       const Text(
                         'Points en main selon l\'atout:',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -203,7 +203,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                               Text(
                                 couleur.symbole,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 15,
                                   color: couleur == Couleur.coeur ||
                                           couleur == Couleur.carreau
                                       ? Colors.red
@@ -213,7 +213,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 '${_calculerPointsTotaux(couleur)} points',
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontSize: 12),
                               ),
                             ],
                           ),
@@ -234,7 +234,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                     const Text(
                       'Qui a distribué les cartes ?',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -263,31 +263,32 @@ class _DistributionScreenState extends State<DistributionScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _cartesSelectionnees.length == 8 && _positionDonneur != null
-                  ? () {
-                      final etatJeu = context.read<EtatJeu>();
-                      etatJeu.definirCartes(_cartesSelectionnees);
-                      
-                      // Mettre à jour les paramètres avec la position du donneur
-                      final parametres = etatJeu.parametres;
-                      if (parametres != null) {
-                        etatJeu.definirParametres(ParametresJeu(
-                          conditionFin: parametres.conditionFin,
-                          valeurFin: parametres.valeurFin,
-                          positionJoueur: parametres.positionJoueur,
-                          sensRotation: parametres.sensRotation,
-                          positionDonneur: _positionDonneur,
-                        ));
-                      }
+              onPressed:
+                  _cartesSelectionnees.length == 8 && _positionDonneur != null
+                      ? () {
+                          final etatJeu = context.read<EtatJeu>();
+                          etatJeu.definirCartes(_cartesSelectionnees);
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const EncheresScreen(),
-                        ),
-                      );
-                    }
-                  : null,
+                          // Mettre à jour les paramètres avec la position du donneur
+                          final parametres = etatJeu.parametres;
+                          if (parametres != null) {
+                            etatJeu.definirParametres(ParametresJeu(
+                              conditionFin: parametres.conditionFin,
+                              valeurFin: parametres.valeurFin,
+                              positionJoueur: parametres.positionJoueur,
+                              sensRotation: parametres.sensRotation,
+                              positionDonneur: _positionDonneur,
+                            ));
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EncheresScreen(),
+                            ),
+                          );
+                        }
+                      : null,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.all(16),
               ),
@@ -295,7 +296,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                 _positionDonneur == null
                     ? 'Sélectionnez le donneur pour continuer'
                     : 'Continuer vers les enchères',
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 15),
               ),
             ),
           ],
