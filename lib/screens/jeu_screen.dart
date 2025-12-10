@@ -54,38 +54,24 @@ class _JeuScreenState extends State<JeuScreen> {
     final estJoueurPrincipal = position == parametres.positionJoueur;
     final estTourJoueur = etatJeu.joueurActuel == parametres.positionJoueur;
     
-    // For the main player, show ALL cards (including played ones)
-    // For other players, show remaining cards
-    final cartes = estJoueurPrincipal
-        ? etatJeu.cartesJoueur
-        : etatJeu.getCartesJoueur(position);
-
+    // Get played and remaining cards for main player
     final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
     
-    // For main player, combine current and played cards to show all 8 cards
-    // Use a Map to avoid duplicates (keyed by couleur.index+valeur.index)
-    final Map<String, Carte> toutesLesCartesMap = {};
+    // Create a set of player's cards (current + played) for quick lookup
+    final Map<String, Carte> mesCartesMap = {};
     
     // Add current cards
-    for (final carte in cartes) {
+    for (final carte in etatJeu.cartesJoueur) {
       final key = '${carte.couleur.index}_${carte.valeur.index}';
-      toutesLesCartesMap[key] = carte;
+      mesCartesMap[key] = carte;
     }
     
-    // For main player, also add played cards
+    // Add played cards
     if (estJoueurPrincipal) {
       for (final carte in cartesJouees) {
         final key = '${carte.couleur.index}_${carte.valeur.index}';
-        toutesLesCartesMap[key] = carte;
+        mesCartesMap[key] = carte;
       }
-    }
-    
-    final toutesLesCartes = toutesLesCartesMap.values.toList();
-
-    // Group cards by color
-    final cartesByCouleur = <Couleur, List<Carte>>{};
-    for (final carte in toutesLesCartes) {
-      cartesByCouleur.putIfAbsent(carte.couleur, () => []).add(carte);
     }
 
     return Column(
@@ -99,12 +85,8 @@ class _JeuScreenState extends State<JeuScreen> {
           ),
         ),
         const SizedBox(height: 8),
+        // Show all possible cards organized by color, like other players
         ...Couleur.values.map((couleur) {
-          final cartesCouleur = cartesByCouleur[couleur] ?? [];
-          if (cartesCouleur.isEmpty && estJoueurPrincipal) {
-            return const SizedBox.shrink();
-          }
-
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             child: Padding(
@@ -126,36 +108,57 @@ class _JeuScreenState extends State<JeuScreen> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: cartesCouleur.map((carte) {
-                      final estJouee =
+                    children: Valeur.values.map((valeur) {
+                      final carte = Carte(couleur: couleur, valeur: valeur);
+                      final key = '${carte.couleur.index}_${carte.valeur.index}';
+                      final estMaCarte = mesCartesMap.containsKey(key);
+                      final estJouee = estMaCarte &&
                           etatJeu.estCarteJoueeParJoueur(position, carte);
-                      final estGrisee = estJouee;
 
-                      return ElevatedButton(
-                        onPressed: (estTourJoueur && !estJouee)
-                            ? () => _jouerCarte(carte)
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              estGrisee ? Colors.grey.shade300 : Colors.white,
-                          foregroundColor: estGrisee
-                              ? Colors.grey.shade600
-                              : (couleur == Couleur.coeur ||
-                                      couleur == Couleur.carreau
-                                  ? Colors.red
-                                  : Colors.black),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                      // Don't show cards that are not mine
+                      if (!estMaCarte) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ElevatedButton(
+                            onPressed: (estTourJoueur && !estJouee)
+                                ? () => _jouerCarte(carte)
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  estJouee ? Colors.grey.shade300 : Colors.white,
+                              foregroundColor: estJouee
+                                  ? Colors.grey.shade600
+                                  : (couleur == Couleur.coeur ||
+                                          couleur == Couleur.carreau
+                                      ? Colors.red
+                                      : Colors.black),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: Text(
+                              carte.nomValeur,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          carte.nomValeur,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                          if (estJouee)
+                            Text(
+                              'Jouée',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey.shade600,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                        ],
                       );
                     }).toList(),
                   ),
