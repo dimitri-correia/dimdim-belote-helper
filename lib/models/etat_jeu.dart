@@ -61,6 +61,45 @@ class EtatJeu extends ChangeNotifier {
   Position? get premierJoueurPli => _premierJoueurPli;
   List<Carte> get cartesJouees => _cartesJouees;
 
+  /// Check if bidding should end because it's the turn of the last player
+  /// who made a non-pass bid and all others have passed since then.
+  bool get doitTerminerEncheres {
+    if (_annonces.isEmpty || _joueurActuel == null) return false;
+    
+    // Find the last non-pass announcement
+    Annonce? dernierNonPasse;
+    int indexDernierNonPasse = -1;
+    
+    for (int i = _annonces.length - 1; i >= 0; i--) {
+      if (_annonces[i].type != TypeAnnonce.passe) {
+        dernierNonPasse = _annonces[i];
+        indexDernierNonPasse = i;
+        break;
+      }
+    }
+    
+    // If no non-pass bid yet, bidding shouldn't end
+    if (dernierNonPasse == null) return false;
+    
+    // Check if all announcements after the last non-pass are passes
+    bool tousPassesApres = true;
+    for (int i = indexDernierNonPasse + 1; i < _annonces.length; i++) {
+      if (_annonces[i].type != TypeAnnonce.passe) {
+        tousPassesApres = false;
+        break;
+      }
+    }
+    
+    // If not all passes after, bidding continues
+    if (!tousPassesApres) return false;
+    
+    // Check if the current player is the one who made the last non-pass bid
+    // and that at least 3 consecutive passes have occurred since then
+    // (meaning all other players have passed)
+    final nombrePassesApres = _annonces.length - indexDernierNonPasse - 1;
+    return _joueurActuel == dernierNonPasse.joueur && nombrePassesApres >= 3;
+  }
+
   void definirParametres(ParametresJeu parametres) {
     _parametres = parametres;
     // Le premier à parler est à la droite du donneur

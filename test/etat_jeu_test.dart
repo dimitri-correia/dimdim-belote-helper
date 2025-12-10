@@ -316,5 +316,160 @@ void main() {
       expect(etatJeu.estCarteJouee(carteAJouer), true);
       expect(etatJeu.estCarteJouee(carteNonJouee), false);
     });
+
+    test('Doit terminer encheres - pas d\'annonces', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.nord,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // No announcements yet - should not end
+      expect(etatJeu.doitTerminerEncheres, false);
+    });
+
+    test('Doit terminer encheres - tous passes', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.nord,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // All pass - should not end
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.ouest, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+
+      expect(etatJeu.doitTerminerEncheres, false);
+    });
+
+    test('Doit terminer encheres - une prise puis 3 passes', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.nord,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+      // Current player should be Ouest (right of dealer)
+
+      // Ouest makes a bid
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.ouest,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      ));
+      // Now Nord's turn
+      expect(etatJeu.joueurActuel, Position.nord);
+      expect(etatJeu.doitTerminerEncheres, false);
+
+      // Nord passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      // Now Est's turn
+      expect(etatJeu.joueurActuel, Position.est);
+      expect(etatJeu.doitTerminerEncheres, false);
+
+      // Est passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+      // Now Sud's turn
+      expect(etatJeu.joueurActuel, Position.sud);
+      expect(etatJeu.doitTerminerEncheres, false);
+
+      // Sud passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+      // Now back to Ouest's turn - should end bidding
+      expect(etatJeu.joueurActuel, Position.ouest);
+      expect(etatJeu.doitTerminerEncheres, true);
+    });
+
+    test('Doit terminer encheres - avec contre et surcontre', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.nord,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+      // Current player should be Ouest
+
+      // Ouest makes a bid
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.ouest,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      ));
+
+      // Nord contres
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.contre));
+
+      // Est surcontres (last non-pass)
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.surcontre));
+
+      // Sud passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+
+      // Ouest passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.ouest, type: TypeAnnonce.passe));
+
+      // Nord passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+
+      // Now back to Est's turn (who made the last non-pass) - should end
+      expect(etatJeu.joueurActuel, Position.est);
+      expect(etatJeu.doitTerminerEncheres, true);
+    });
+
+    test('Doit terminer encheres - ne termine pas si nouveau prise apres', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.nord,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // Ouest makes a bid
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.ouest,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      ));
+
+      // Nord passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+
+      // Est raises the bid (last non-pass now)
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.est,
+        type: TypeAnnonce.prise,
+        valeur: 90,
+        couleur: '♥ Cœur',
+      ));
+
+      // Sud passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+
+      // Ouest's turn - should NOT end (not the last bidder)
+      expect(etatJeu.joueurActuel, Position.ouest);
+      expect(etatJeu.doitTerminerEncheres, false);
+    });
   });
 }
