@@ -108,6 +108,10 @@ class _EncheresScreenState extends State<EncheresScreen> {
     });
   }
 
+  /// Obtient la valeur minimale pour une nouvelle enchère.
+  /// Retourne null si les enchères sont bloquées (après un Capot).
+  /// Retourne 80 s'il n'y a pas encore d'annonces.
+  /// Sinon, retourne la dernière valeur + 10.
   int? _obtenirValeurMinimale() {
     final etatJeu = context.read<EtatJeu>();
     final annonces = etatJeu.annonces;
@@ -129,6 +133,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
     return 80;
   }
 
+  /// Retourne true si on peut annoncer un Capot (pas de Capot déjà annoncé).
   bool _peutAnnoncerCapot() {
     final valeurMin = _obtenirValeurMinimale();
     // On peut annoncer capot si on peut encore enchérir (pas de capot avant)
