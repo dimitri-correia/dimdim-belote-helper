@@ -404,7 +404,8 @@ class EtatJeu extends ChangeNotifier {
 
   /// Get the atout (trump) color from the winning bid
   String? get atout {
-    // Find the last prise in announcements
+    // Find the last prise (the actual bid) in announcements, which might be contré/surcontré
+    // We need to find the prise that is the basis of the winning announcement
     for (int i = _annonces.length - 1; i >= 0; i--) {
       if (_annonces[i].type == TypeAnnonce.prise && _annonces[i].couleur != null) {
         return _annonces[i].couleur;

@@ -308,10 +308,12 @@ class _JeuScreenState extends State<JeuScreen> {
                                   Text(
                                     etatJeu.atout!,
                                     style: TextStyle(
-                                      fontSize: 32,
+                                      fontSize: 28,
                                       fontWeight: FontWeight.bold,
-                                      color: etatJeu.atout!.contains('♥') ||
-                                              etatJeu.atout!.contains('♦')
+                                      color: (etatJeu.atout!.contains('♥') ||
+                                              etatJeu.atout!.contains('Cœur') ||
+                                              etatJeu.atout!.contains('♦') ||
+                                              etatJeu.atout!.contains('Carreau'))
                                           ? Colors.red
                                           : Colors.black,
                                     ),
