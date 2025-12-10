@@ -108,7 +108,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
     });
   }
 
-  int _obtenirValeurMinimale() {
+  int? _obtenirValeurMinimale() {
     final etatJeu = context.read<EtatJeu>();
     final annonces = etatJeu.annonces;
     
@@ -118,7 +118,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
     for (int i = annonces.length - 1; i >= 0; i--) {
       if (annonces[i].type == TypeAnnonce.prise) {
         if (annonces[i].estCapot) {
-          return 999; // Valeur impossible pour bloquer les enchères
+          return null; // null indique qu'on ne peut plus enchérir (après un capot)
         }
         if (annonces[i].valeur != null) {
           return annonces[i].valeur! + 10;
@@ -132,7 +132,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
   bool _peutAnnoncerCapot() {
     final valeurMin = _obtenirValeurMinimale();
     // On peut annoncer capot si on peut encore enchérir (pas de capot avant)
-    return valeurMin < 999;
+    return valeurMin != null;
   }
 
   @override
@@ -335,7 +335,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                                   Expanded(
                                     child: ListView(
                                       children: _valeursDisponibles
-                                          .where((v) => v >= valeurMin && valeurMin < 999)
+                                          .where((v) => valeurMin != null && v >= valeurMin)
                                           .map((valeur) {
                                         return RadioListTile<int>(
                                           title: Text(valeur.toString()),
