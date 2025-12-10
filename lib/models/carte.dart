@@ -56,6 +56,47 @@ class Carte {
     }
   }
 
+  /// Points when this card is trump (atout)
+  int get pointsAtout {
+    switch (valeur) {
+      case Valeur.valet:
+        return 20;
+      case Valeur.neuf:
+        return 14;
+      case Valeur.as:
+        return 11;
+      case Valeur.dix:
+        return 10;
+      case Valeur.roi:
+        return 4;
+      case Valeur.dame:
+        return 3;
+      case Valeur.huit:
+      case Valeur.sept:
+        return 0;
+    }
+  }
+
+  /// Points when this card is NOT trump (non-atout)
+  int get pointsNonAtout {
+    switch (valeur) {
+      case Valeur.as:
+        return 11;
+      case Valeur.dix:
+        return 10;
+      case Valeur.roi:
+        return 4;
+      case Valeur.dame:
+        return 3;
+      case Valeur.valet:
+        return 2;
+      case Valeur.neuf:
+      case Valeur.huit:
+      case Valeur.sept:
+        return 0;
+    }
+  }
+
   @override
   String toString() => '$nomValeur$nomCouleur';
 }

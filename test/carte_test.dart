@@ -45,5 +45,27 @@ void main() {
       final carte = Carte(couleur: Couleur.coeur, valeur: Valeur.as);
       expect(carte.toString(), 'A♥');
     });
+
+    test('Points atout', () {
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.valet).pointsAtout, 20);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.neuf).pointsAtout, 14);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.as).pointsAtout, 11);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.dix).pointsAtout, 10);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.roi).pointsAtout, 4);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.dame).pointsAtout, 3);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.huit).pointsAtout, 0);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.sept).pointsAtout, 0);
+    });
+
+    test('Points non-atout', () {
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.as).pointsNonAtout, 11);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.dix).pointsNonAtout, 10);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.roi).pointsNonAtout, 4);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.dame).pointsNonAtout, 3);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.valet).pointsNonAtout, 2);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.neuf).pointsNonAtout, 0);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.huit).pointsNonAtout, 0);
+      expect(Carte(couleur: Couleur.pique, valeur: Valeur.sept).pointsNonAtout, 0);
+    });
   });
 }
