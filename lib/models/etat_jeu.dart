@@ -273,7 +273,17 @@ class EtatJeu extends ChangeNotifier {
     return 0;
   }
 
-  /// Total points available in a hand (used for defense scoring when contract fails)
+  /// Total points available in a Belote Contrée hand
+  /// 
+  /// In Belote Contrée, there are exactly 162 total points in a complete hand:
+  /// - 3 non-trump suits: 3 × 30 = 90 points
+  /// - 1 trump suit: 62 points
+  /// - Dix de der (last pli bonus): 10 points
+  /// Total: 90 + 62 + 10 = 162 points
+  /// 
+  /// However, when a contract fails, the defense scores 160 points + the announce value.
+  /// This represents all the hand points (without separately counting the actual plis won).
+  /// The 160 excludes the dix de der which is counted separately in actual play.
   static const int pointsDefenseContratChute = 160;
 
   /// Check if a card can be legally played based on Belote rules
