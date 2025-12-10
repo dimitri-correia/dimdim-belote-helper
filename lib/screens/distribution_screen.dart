@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dimdim_belote_helper/models/etat_jeu.dart';
 import 'package:dimdim_belote_helper/models/carte.dart';
+import 'package:dimdim_belote_helper/models/position.dart';
 import 'package:dimdim_belote_helper/screens/encheres_screen.dart';
 
 class DistributionScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class DistributionScreen extends StatefulWidget {
 class _DistributionScreenState extends State<DistributionScreen> {
   final List<Carte> _cartesSelectionnees = [];
   final List<List<Carte>> _toutesCartes = [];
+  Position? _positionDonneur;
 
   @override
   void initState() {
@@ -223,12 +225,61 @@ class _DistributionScreenState extends State<DistributionScreen> {
               ),
             ],
             const SizedBox(height: 16),
+            Card(
+              color: Colors.green.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Qui a distribué les cartes ?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<Position>(
+                      value: _positionDonneur,
+                      decoration: const InputDecoration(
+                        hintText: 'Sélectionnez le donneur',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: Position.values
+                          .map((position) => DropdownMenuItem(
+                                value: position,
+                                child: Text(position.nom),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _positionDonneur = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _cartesSelectionnees.length == 8
+              onPressed: _cartesSelectionnees.length == 8 && _positionDonneur != null
                   ? () {
-                      context
-                          .read<EtatJeu>()
-                          .definirCartes(_cartesSelectionnees);
+                      final etatJeu = context.read<EtatJeu>();
+                      etatJeu.definirCartes(_cartesSelectionnees);
+                      
+                      // Mettre à jour les paramètres avec la position du donneur
+                      final parametres = etatJeu.parametres;
+                      if (parametres != null) {
+                        etatJeu.definirParametres(ParametresJeu(
+                          conditionFin: parametres.conditionFin,
+                          valeurFin: parametres.valeurFin,
+                          positionJoueur: parametres.positionJoueur,
+                          sensRotation: parametres.sensRotation,
+                          positionDonneur: _positionDonneur,
+                        ));
+                      }
 
                       Navigator.push(
                         context,
@@ -241,9 +292,11 @@ class _DistributionScreenState extends State<DistributionScreen> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.all(16),
               ),
-              child: const Text(
-                'Continuer vers les enchères',
-                style: TextStyle(fontSize: 18),
+              child: Text(
+                _positionDonneur == null
+                    ? 'Sélectionnez le donneur pour continuer'
+                    : 'Continuer vers les enchères',
+                style: const TextStyle(fontSize: 18),
               ),
             ),
           ],

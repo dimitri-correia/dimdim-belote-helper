@@ -31,6 +31,21 @@ void main() {
       expect(annonce.texte, '80 ♠ Pique');
     });
 
+    test('Annonce capot', () {
+      final annonce = Annonce(
+        joueur: Position.nord,
+        type: TypeAnnonce.prise,
+        couleur: '♥ Cœur',
+        estCapot: true,
+      );
+
+      expect(annonce.joueur, Position.nord);
+      expect(annonce.type, TypeAnnonce.prise);
+      expect(annonce.estCapot, true);
+      expect(annonce.couleur, '♥ Cœur');
+      expect(annonce.texte, 'Capot ♥ Cœur');
+    });
+
     test('Annonce contre', () {
       final annonce = Annonce(
         joueur: Position.est,

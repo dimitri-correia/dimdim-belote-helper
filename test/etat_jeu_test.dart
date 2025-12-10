@@ -19,7 +19,7 @@ void main() {
       expect(etatJeu.joueurActuel, isNull);
     });
 
-    test('Definir parametres', () {
+    test('Definir parametres sans donneur', () {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
         valeurFin: 1000,
@@ -34,6 +34,38 @@ void main() {
       expect(etatJeu.parametres!.valeurFin, 1000);
       expect(etatJeu.parametres!.positionJoueur, Position.sud);
       expect(etatJeu.joueurActuel, Position.sud);
+    });
+
+    test('Definir parametres avec donneur - rotation horaire', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.sud,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.nord,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // Le premier à parler est à la droite du donneur en rotation horaire
+      // Donneur = Nord, donc premier parleur = Est
+      expect(etatJeu.joueurActuel, Position.est);
+    });
+
+    test('Definir parametres avec donneur - rotation anti-horaire', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.sud,
+        sensRotation: SensRotation.antihoraire,
+        positionDonneur: Position.nord,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // Le premier à parler est à la droite du donneur en rotation anti-horaire
+      // Donneur = Nord, donc premier parleur = Ouest
+      expect(etatJeu.joueurActuel, Position.ouest);
     });
 
     test('Definir cartes', () {
@@ -91,7 +123,7 @@ void main() {
       expect(etatJeu.joueurActuel, Position.ouest); // Rotation anti-horaire
     });
 
-    test('Reinitialiser annonces', () {
+    test('Reinitialiser annonces sans donneur', () {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
         valeurFin: 1000,
@@ -114,6 +146,28 @@ void main() {
 
       expect(etatJeu.annonces, isEmpty);
       expect(etatJeu.joueurActuel, Position.sud); // Reset to initial player
+    });
+
+    test('Reinitialiser annonces avec donneur', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        positionJoueur: Position.sud,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.est,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      etatJeu.ajouterAnnonce(
+        Annonce(joueur: Position.sud, type: TypeAnnonce.passe),
+      );
+
+      etatJeu.reinitialiserAnnonces();
+
+      expect(etatJeu.annonces, isEmpty);
+      // Reset to first speaker (à droite du donneur)
+      expect(etatJeu.joueurActuel, Position.sud); // Donneur = Est, premier = Sud (horaire)
     });
 
     test('Reinitialiser tout', () {
