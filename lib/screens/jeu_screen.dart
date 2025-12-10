@@ -71,7 +71,7 @@ class _JeuScreenState extends State<JeuScreen> {
       cartesUniques[key] = carte;
     }
     
-    // Add played cards (Set automatically handles duplicates)
+    // Add played cards (Map keys automatically handle duplicates)
     for (final carte in cartesJouees) {
       final key = '${carte.couleur.index}_${carte.valeur.index}';
       cartesUniques[key] = carte;
