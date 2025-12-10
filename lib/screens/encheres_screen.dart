@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:dimdim_belote_helper/models/etat_jeu.dart';
 import 'package:dimdim_belote_helper/models/annonce.dart';
 import 'package:dimdim_belote_helper/models/position.dart';
+import 'package:dimdim_belote_helper/screens/jeu_screen.dart';
 
 class EncheresScreen extends StatefulWidget {
   const EncheresScreen({super.key});
@@ -423,6 +424,32 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     style: const TextStyle(fontSize: 18),
                   ),
                 ),
+                
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 12),
+                
+                // Button to proceed to game phase
+                if (etatJeu.annonces.isNotEmpty)
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const JeuScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text(
+                      'Commencer le jeu',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      backgroundColor: Colors.green,
+                    ),
+                  ),
               ],
             ),
           );
