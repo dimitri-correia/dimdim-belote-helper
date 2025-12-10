@@ -68,7 +68,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
   int _calculerPointsTotaux(Couleur? couleurAtout) {
     return _cartesSelectionnees.fold(0, (sum, carte) {
       if (couleurAtout == null) {
-        // Sans atout
+        // No trump suit (defensive case, should not happen in Belote Contrée)
         return sum + carte.pointsNonAtout;
       } else if (carte.couleur == couleurAtout) {
         return sum + carte.pointsAtout;
