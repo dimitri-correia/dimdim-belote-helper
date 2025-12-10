@@ -76,10 +76,15 @@ class EtatJeu extends ChangeNotifier {
     
     final dernierNonPasse = _annonces[indexDernierNonPasse];
     
-    // Check that all announcements after the last non-pass are passes
-    // and that at least 3 consecutive passes have occurred (all other players)
+    // Verify that all announcements after the last non-pass are passes
+    // and that exactly 3 consecutive passes have occurred (one from each other player)
     final nombrePassesApres = _annonces.length - indexDernierNonPasse - 1;
-    if (nombrePassesApres < 3) return false;
+    if (nombrePassesApres != 3) return false;
+    
+    // Verify all announcements after last non-pass are actually passes
+    for (int i = indexDernierNonPasse + 1; i < _annonces.length; i++) {
+      if (_annonces[i].type != TypeAnnonce.passe) return false;
+    }
     
     // Check if the current player is the one who made the last non-pass bid
     return _joueurActuel == dernierNonPasse.joueur;
