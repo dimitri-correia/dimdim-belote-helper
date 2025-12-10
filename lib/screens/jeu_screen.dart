@@ -57,22 +57,29 @@ class _JeuScreenState extends State<JeuScreen> {
     // Get played and remaining cards for this position
     final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
     
-    // Create a set of player's cards (current + played) for quick lookup
-    final Map<String, Carte> mesCartesMap = {};
+    // Combine current and played cards
+    final toutesLesCartes = <Carte>[];
     
     // Add current cards
     final cartesCourantes = estJoueurPrincipal
         ? etatJeu.cartesJoueur
         : etatJeu.getCartesJoueur(position);
-    for (final carte in cartesCourantes) {
-      final key = '${carte.couleur.index}_${carte.valeur.index}';
-      mesCartesMap[key] = carte;
+    toutesLesCartes.addAll(cartesCourantes);
+    
+    // Add played cards (avoiding duplicates)
+    for (final carte in cartesJouees) {
+      final exists = toutesLesCartes.any(
+        (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
+      );
+      if (!exists) {
+        toutesLesCartes.add(carte);
+      }
     }
     
-    // Add played cards
-    for (final carte in cartesJouees) {
-      final key = '${carte.couleur.index}_${carte.valeur.index}';
-      mesCartesMap[key] = carte;
+    // Group cards by color once
+    final cartesByCouleur = <Couleur, List<Carte>>{};
+    for (final carte in toutesLesCartes) {
+      cartesByCouleur.putIfAbsent(carte.couleur, () => []).add(carte);
     }
 
     return Column(
@@ -88,10 +95,8 @@ class _JeuScreenState extends State<JeuScreen> {
         const SizedBox(height: 8),
         // Show all possible cards organized by color, like other players
         ...Couleur.values.map((couleur) {
-          // Filter to only show player's cards for this color
-          final cartesAffichees = mesCartesMap.values
-              .where((carte) => carte.couleur == couleur)
-              .toList();
+          // Get cards for this color
+          final cartesAffichees = cartesByCouleur[couleur] ?? [];
           
           // Skip empty color sections
           if (cartesAffichees.isEmpty) {
