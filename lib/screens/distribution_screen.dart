@@ -103,13 +103,12 @@ class _DistributionScreenState extends State<DistributionScreen> {
               setState(() {
                 _cartesSelectionnees.clear();
                 _positionDonneur = null;
-                _previousEtatJeuCardsLength = 0;
               });
             });
-          } else {
-            // Track the current length for next comparison
-            _previousEtatJeuCardsLength = currentCardsLength;
           }
+          
+          // Always update the tracked length after checking
+          _previousEtatJeuCardsLength = currentCardsLength;
           
           return Padding(
             padding: const EdgeInsets.all(16.0),
