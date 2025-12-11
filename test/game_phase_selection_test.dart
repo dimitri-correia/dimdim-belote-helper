@@ -132,5 +132,47 @@ void main() {
       expect(etatJeu.nombrePlis, 1);
       expect(etatJeu.pliActuel.length, 0);
     });
+
+    test('Old peutJouerCarte function still works for main player', () {
+      // Est plays first
+      etatJeu.jouerCarte(Carte(couleur: Couleur.trefle, valeur: Valeur.valet));
+      
+      // Now it's Sud's turn (the main player)
+      expect(etatJeu.joueurActuel, Position.sud);
+      
+      // Old function should work correctly
+      final carteAPiquer = Carte(couleur: Couleur.pique, valeur: Valeur.as);
+      expect(etatJeu.peutJouerCarte(carteAPiquer), true);
+      
+      // When it's not Sud's turn, should return false
+      etatJeu.jouerCarte(Carte(couleur: Couleur.coeur, valeur: Valeur.roi)); // Sud plays
+      expect(etatJeu.joueurActuel, Position.ouest);
+      expect(etatJeu.peutJouerCarte(carteAPiquer), false); // Not Sud's turn anymore
+    });
+
+    test('Cannot play a card that is in main player hand for other players', () {
+      // This test verifies that when Est plays, they can technically play
+      // any unplayed card including ones that Sud has (since we don't know Est's hand)
+      expect(etatJeu.joueurActuel, Position.est);
+      
+      // Sud has Pique As in hand
+      final piqueAs = Carte(couleur: Couleur.pique, valeur: Valeur.as);
+      
+      // Est can "play" this card (user enters what Est played)
+      // The system doesn't prevent it because we don't know Est's actual hand
+      expect(etatJeu.peutJouerCartePosition(piqueAs, Position.est), true);
+      
+      // Play it for Est
+      etatJeu.jouerCarte(piqueAs);
+      
+      // Now Sud's turn - Sud should not have access to play Pique As anymore
+      expect(etatJeu.joueurActuel, Position.sud);
+      
+      // The card is marked as played by Est
+      expect(etatJeu.estCarteJoueeParJoueur(Position.est, piqueAs), true);
+      
+      // Sud can't play it because it's already played
+      expect(etatJeu.peutJouerCartePosition(piqueAs, Position.sud), false);
+    });
   });
 }

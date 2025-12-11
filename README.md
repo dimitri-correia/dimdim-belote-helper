@@ -28,9 +28,11 @@ Une application Flutter pour gérer vos parties de Belote Contrée.
 4. **Jeu** : Phase de jeu des cartes
    - Affichage des informations de la partie (nombre de plis, points de chaque équipe)
    - Suivi de l'ordre des joueurs pour savoir qui doit jouer
-   - Sélection des cartes jouées par un simple clic
-   - Bouton pour griser les cartes déjà jouées
-   - Affichage du pli en cours avec les cartes jouées
+   - Sélection des cartes jouées pour tous les joueurs (pas seulement vos cartes)
+   - En tant qu'application d'aide, vous pouvez entrer les cartes jouées par tous les joueurs
+   - Validation des règles de Belote uniquement pour vos propres cartes
+   - Les cartes déjà jouées sont grisées automatiquement
+   - Affichage du pli en cours avec les cartes jouées par tous les joueurs
 
 ## Plateformes supportées
 
