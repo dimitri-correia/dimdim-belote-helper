@@ -93,6 +93,17 @@ class _DistributionScreenState extends State<DistributionScreen> {
       ),
       body: Consumer<EtatJeu>(
         builder: (context, etatJeu, child) {
+          // Clear local selection if EtatJeu cards have been cleared (e.g., after all-pass)
+          if (etatJeu.cartesJoueur.isEmpty && _cartesSelectionnees.isNotEmpty) {
+            // Use post-frame callback to avoid modifying state during build
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              setState(() {
+                _cartesSelectionnees.clear();
+                _positionDonneur = null;
+              });
+            });
+          }
+          
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
