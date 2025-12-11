@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dimdim_belote/models/etat_jeu.dart';
 import 'package:dimdim_belote/models/carte.dart';
+import 'package:dimdim_belote/models/position.dart';
 
 class CompletedPlisHistory extends StatelessWidget {
   final EtatJeu etatJeu;

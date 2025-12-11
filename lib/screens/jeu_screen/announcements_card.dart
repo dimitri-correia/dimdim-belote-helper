@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dimdim_belote/models/etat_jeu.dart';
+import 'package:dimdim_belote/models/position.dart';
 
 class AnnouncementsCard extends StatelessWidget {
   final EtatJeu etatJeu;
