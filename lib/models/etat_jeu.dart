@@ -57,6 +57,7 @@ class EtatJeu extends ChangeNotifier {
   
   // Game phase tracking
   int _nombrePlis = 0;
+  int _nombreMains = 0; // Number of completed mains (hands)
   int _pointsNordSud = 0;
   int _pointsEstOuest = 0;
   int _pointsTotauxNordSud = 0; // Total points across all mains
@@ -79,6 +80,7 @@ class EtatJeu extends ChangeNotifier {
   List<Annonce> get annonces => _annonces;
   Position? get joueurActuel => _joueurActuel;
   int get nombrePlis => _nombrePlis;
+  int get nombreMains => _nombreMains;
   int get pointsNordSud => _pointsNordSud;
   int get pointsEstOuest => _pointsEstOuest;
   int get pointsTotauxNordSud => _pointsTotauxNordSud;
@@ -173,6 +175,7 @@ class EtatJeu extends ChangeNotifier {
     _annonces = [];
     _joueurActuel = null;
     _nombrePlis = 0;
+    _nombreMains = 0;
     _pointsNordSud = 0;
     _pointsEstOuest = 0;
     _pointsTotauxNordSud = 0;
@@ -715,6 +718,7 @@ class EtatJeu extends ChangeNotifier {
     _pointsTotauxNordSud += details['pointsGagnesNordSud'] as int;
     _pointsTotauxEstOuest += details['pointsGagnesEstOuest'] as int;
     _mainFinalisee = true;
+    _nombreMains++;
     notifyListeners();
   }
 

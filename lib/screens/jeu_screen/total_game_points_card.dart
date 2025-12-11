@@ -70,15 +70,15 @@ class TotalGamePointsCard extends StatelessWidget {
 
             const SizedBox(height: 4),
 
-            // Second line: Plis counter and objective
+            // Second line: Mains counter and objective
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Plis: '),
+                const Text('Mains: '),
                 Text(
                   parametres.conditionFin == ConditionFin.plis
-                      ? '${etatJeu.nombrePlis}/${parametres.valeurFin}'
-                      : '${etatJeu.nombrePlis}',
+                      ? '${etatJeu.nombreMains}/${parametres.valeurFin}'
+                      : '${etatJeu.nombreMains}',
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,

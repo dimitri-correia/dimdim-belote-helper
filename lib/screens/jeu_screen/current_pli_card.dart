@@ -13,18 +13,33 @@ class CurrentPliCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate current pli number (completed plis + 1 for current pli)
+    final currentPliNumber = etatJeu.nombrePlis + 1;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Pli en cours:',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                const Text(
+                  'Pli en cours: ',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '$currentPliNumber/8',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
             ),
             Row(
               children: [
