@@ -13,14 +13,19 @@ class DistributionScreen extends StatefulWidget {
 }
 
 class _DistributionScreenState extends State<DistributionScreen> {
-  final List<Carte> _cartesSelectionnees = [];
+  final Map<Position, List<Carte>> _cartesParJoueur = {};
   final List<List<Carte>> _toutesCartes = [];
   Position? _positionDonneur;
+  Position _joueurSelectionne = Position.sud; // Start with the main player
 
   @override
   void initState() {
     super.initState();
     _genererCartes();
+    // Initialize empty card lists for all players
+    for (final position in Position.values) {
+      _cartesParJoueur[position] = [];
+    }
   }
 
   void _genererCartes() {
@@ -38,35 +43,62 @@ class _DistributionScreenState extends State<DistributionScreen> {
 
   void _toggleCarte(Carte carte) {
     setState(() {
-      final index = _cartesSelectionnees.indexWhere(
+      final cartesJoueur = _cartesParJoueur[_joueurSelectionne]!;
+      final index = cartesJoueur.indexWhere(
         (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
       );
 
       if (index >= 0) {
-        _cartesSelectionnees.removeAt(index);
+        cartesJoueur.removeAt(index);
       } else {
-        if (_cartesSelectionnees.length < 8) {
-          _cartesSelectionnees.add(carte);
+        // Check if card is already assigned to another player
+        bool carteDejaAssignee = false;
+        for (final position in Position.values) {
+          if (position != _joueurSelectionne) {
+            if (_cartesParJoueur[position]!.any(
+              (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
+            )) {
+              carteDejaAssignee = true;
+              break;
+            }
+          }
+        }
+
+        if (!carteDejaAssignee && cartesJoueur.length < 8) {
+          cartesJoueur.add(carte);
         }
       }
     });
   }
 
   bool _estSelectionnee(Carte carte) {
-    return _cartesSelectionnees.any(
+    return _cartesParJoueur[_joueurSelectionne]!.any(
       (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
     );
   }
 
+  bool _estCarteDejaAssignee(Carte carte) {
+    for (final position in Position.values) {
+      if (_cartesParJoueur[position]!.any(
+        (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
+      )) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   int _calculerPointsCouleur(Couleur couleur, bool estAtout) {
-    return _cartesSelectionnees.where((carte) => carte.couleur == couleur).fold(
-        0,
-        (sum, carte) =>
-            sum + (estAtout ? carte.pointsAtout : carte.pointsNonAtout));
+    return _cartesParJoueur[_joueurSelectionne]!
+        .where((carte) => carte.couleur == couleur)
+        .fold(
+            0,
+            (sum, carte) =>
+                sum + (estAtout ? carte.pointsAtout : carte.pointsNonAtout));
   }
 
   int _calculerPointsTotaux(Couleur? couleurAtout) {
-    return _cartesSelectionnees.fold(0, (sum, carte) {
+    return _cartesParJoueur[_joueurSelectionne]!.fold(0, (sum, carte) {
       if (couleurAtout == null) {
         // No trump suit (defensive case, should not happen in Belote Contrée)
         return sum + carte.pointsNonAtout;
@@ -78,8 +110,24 @@ class _DistributionScreenState extends State<DistributionScreen> {
     });
   }
 
+  int _getTotalCartesSelectionnees() {
+    return _cartesParJoueur.values.fold(0, (sum, cartes) => sum + cartes.length);
+  }
+
+  bool _tousLesJoueursOnt8Cartes() {
+    for (final position in Position.values) {
+      if (_cartesParJoueur[position]!.length != 8) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cartesJoueurSelectionne = _cartesParJoueur[_joueurSelectionne]!;
+    final totalCartes = _getTotalCartesSelectionnees();
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('DIMDIM BELOTE - Distribution'),
@@ -90,12 +138,61 @@ class _DistributionScreenState extends State<DistributionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Player selector
+            Card(
+              color: Colors.purple.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Sélection des cartes pour:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: Position.values.map((position) {
+                        final cartes = _cartesParJoueur[position]!;
+                        final estSelectionne = _joueurSelectionne == position;
+                        
+                        return ChoiceChip(
+                          label: Text(
+                            '${position.nom} (${cartes.length}/8)',
+                            style: TextStyle(
+                              color: estSelectionne ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          selected: estSelectionne,
+                          onSelected: (_) {
+                            setState(() {
+                              _joueurSelectionne = position;
+                            });
+                          },
+                          selectedColor: Colors.purple,
+                          backgroundColor: cartes.length == 8
+                              ? Colors.green.shade100
+                              : Colors.grey.shade200,
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             Card(
               color: Colors.blue.shade50,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Text(
-                  'Sélectionnez vos 8 cartes (${_cartesSelectionnees.length}/8)',
+                  'Sélectionnez les 8 cartes de ${_joueurSelectionne.nom} (${cartesJoueurSelectionne.length}/8) - Total: $totalCartes/32',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -150,6 +247,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                             runSpacing: 8,
                             children: cartesCouleur.map((carte) {
                               final estSelectionnee = _estSelectionnee(carte);
+                              final estDejaAssignee = _estCarteDejaAssignee(carte);
 
                               return FilterChip(
                                 label: Text(
@@ -157,17 +255,22 @@ class _DistributionScreenState extends State<DistributionScreen> {
                                   style: TextStyle(
                                     color: estSelectionnee
                                         ? Colors.white
-                                        : (couleur == Couleur.coeur ||
-                                                couleur == Couleur.carreau
-                                            ? Colors.red
-                                            : Colors.black),
+                                        : (estDejaAssignee
+                                            ? Colors.grey
+                                            : (couleur == Couleur.coeur ||
+                                                    couleur == Couleur.carreau
+                                                ? Colors.red
+                                                : Colors.black)),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 selected: estSelectionnee,
-                                onSelected: (_) => _toggleCarte(carte),
+                                onSelected: estDejaAssignee && !estSelectionnee
+                                    ? null
+                                    : (_) => _toggleCarte(carte),
                                 selectedColor: Colors.blue,
                                 checkmarkColor: Colors.white,
+                                disabledColor: Colors.grey.shade300,
                               );
                             }).toList(),
                           ),
@@ -178,7 +281,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                 },
               ),
             ),
-            if (_cartesSelectionnees.isNotEmpty) ...[
+            if (cartesJoueurSelectionne.isNotEmpty) ...[
               const SizedBox(height: 16),
               Card(
                 color: Colors.amber.shade50,
@@ -187,9 +290,9 @@ class _DistributionScreenState extends State<DistributionScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Points en main selon l\'atout:',
-                        style: TextStyle(
+                      Text(
+                        'Points en main de ${_joueurSelectionne.nom} selon l\'atout:',
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -264,10 +367,10 @@ class _DistributionScreenState extends State<DistributionScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed:
-                  _cartesSelectionnees.length == 8 && _positionDonneur != null
+                  _tousLesJoueursOnt8Cartes() && _positionDonneur != null
                       ? () {
                           final etatJeu = context.read<EtatJeu>();
-                          etatJeu.definirCartes(_cartesSelectionnees);
+                          etatJeu.definirToutesLesCartes(_cartesParJoueur);
 
                           // Mettre à jour les paramètres avec la position du donneur
                           final parametres = etatJeu.parametres;
@@ -294,7 +397,9 @@ class _DistributionScreenState extends State<DistributionScreen> {
               child: Text(
                 _positionDonneur == null
                     ? 'Sélectionnez le donneur pour continuer'
-                    : 'Continuer vers les enchères',
+                    : (!_tousLesJoueursOnt8Cartes()
+                        ? 'Sélectionnez 8 cartes pour chaque joueur ($totalCartes/32)'
+                        : 'Continuer vers les enchères'),
                 style: const TextStyle(fontSize: 15),
               ),
             ),

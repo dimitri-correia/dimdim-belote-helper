@@ -139,6 +139,13 @@ class EtatJeu extends ChangeNotifier {
     notifyListeners();
   }
 
+  void definirToutesLesCartes(Map<Position, List<Carte>> cartesParJoueur) {
+    _cartesParJoueur = cartesParJoueur;
+    // Set the main player's cards
+    _cartesJoueur = cartesParJoueur[_parametres?.positionJoueur] ?? [];
+    notifyListeners();
+  }
+
   void ajouterAnnonce(Annonce annonce) {
     _annonces.add(annonce);
     
@@ -287,15 +294,20 @@ class EtatJeu extends ChangeNotifier {
   /// The 160 excludes the dix de der which is counted separately in actual play.
   static const int pointsDefenseContratChute = 160;
 
-  /// Check if a card can be legally played based on Belote rules
-  bool peutJouerCarte(Carte carte) {
+  /// Check if a card can be legally played for a specific position
+  bool peutJouerCartePosition(Carte carte, Position position) {
     if (_joueurActuel == null || _parametres == null) return false;
     
-    // Only the current player's cards can be played
-    if (_joueurActuel != _parametres!.positionJoueur) return false;
+    // Can only play if it's this position's turn
+    if (_joueurActuel != position) return false;
     
-    // Check if player has this card
-    if (!_cartesJoueur.any((c) => c.couleur == carte.couleur && c.valeur == carte.valeur)) {
+    // Get the cards for this position
+    final cartesPosition = position == _parametres!.positionJoueur
+        ? _cartesJoueur
+        : _cartesParJoueur[position] ?? [];
+    
+    // Check if this position has this card
+    if (!cartesPosition.any((c) => c.couleur == carte.couleur && c.valeur == carte.valeur)) {
       return false;
     }
     
@@ -306,7 +318,7 @@ class EtatJeu extends ChangeNotifier {
     final trumpCouleur = atoutCouleur;
     
     // Check if player has any cards of requested suit
-    final aCartesCouleurDemandee = _cartesJoueur.any((c) => c.couleur == couleurDemandee);
+    final aCartesCouleurDemandee = cartesPosition.any((c) => c.couleur == couleurDemandee);
     
     // Must follow suit if possible
     if (aCartesCouleurDemandee) {
@@ -315,7 +327,7 @@ class EtatJeu extends ChangeNotifier {
     
     // If can't follow suit and trump exists, must play trump if possible
     if (trumpCouleur != null) {
-      final aCartesAtout = _cartesJoueur.any((c) => c.couleur == trumpCouleur);
+      final aCartesAtout = cartesPosition.any((c) => c.couleur == trumpCouleur);
       
       if (aCartesAtout) {
         // Must play trump
@@ -337,7 +349,7 @@ class EtatJeu extends ChangeNotifier {
           }
           
           // Check if player has a higher trump
-          final atoutsDisponibles = _cartesJoueur.where((c) => c.couleur == trumpCouleur).toList();
+          final atoutsDisponibles = cartesPosition.where((c) => c.couleur == trumpCouleur).toList();
           final aPlusHautAtout = atoutsDisponibles.any(
             (c) => _comparerCartes(c, plusHautAtout, null) < 0
           );
@@ -354,6 +366,12 @@ class EtatJeu extends ChangeNotifier {
     
     // If can't follow suit and no trump (or no trump cards), can play any card
     return true;
+  }
+
+  /// Check if a card can be legally played based on Belote rules (for main player)
+  bool peutJouerCarte(Carte carte) {
+    if (_parametres == null) return false;
+    return peutJouerCartePosition(carte, _parametres!.positionJoueur);
   }
 
   /// Get list of valid cards that can be played
@@ -379,21 +397,34 @@ class EtatJeu extends ChangeNotifier {
     _mainFinalisee = false;
     _pliActuel = [];
     _cartesJouees = [];
-    _cartesParJoueur = {};
-    _cartesJoueesParJoueur = {};
     _plisTermines = [];
     
-    // Initialize cards for all players
+    // Initialize played cards tracking for all players
+    // Only reset _cartesParJoueur if it's empty (not set during distribution)
+    if (_cartesParJoueur.isEmpty) {
+      for (final position in Position.values) {
+        if (position == _parametres?.positionJoueur) {
+          _cartesParJoueur[position] = List.from(_cartesJoueur);
+        } else {
+          // Initialize with empty list for other players (unknown cards)
+          _cartesParJoueur[position] = [];
+        }
+      }
+    } else {
+      // Cards were already set in distribution, just make copies to track remaining cards
+      for (final position in Position.values) {
+        _cartesParJoueur[position] = List.from(_cartesParJoueur[position] ?? []);
+      }
+    }
+    
+    // Reset played cards tracking
+    _cartesJoueesParJoueur = {};
+    _couleursManquantes = {};
     for (final position in Position.values) {
       _cartesJoueesParJoueur[position] = [];
       _couleursManquantes[position] = {};
-      if (position == _parametres?.positionJoueur) {
-        _cartesParJoueur[position] = List.from(_cartesJoueur);
-      } else {
-        // Initialize with all 8 cards for other players (unknown cards)
-        _cartesParJoueur[position] = [];
-      }
     }
+    
     notifyListeners();
   }
 
@@ -431,16 +462,18 @@ class EtatJeu extends ChangeNotifier {
     _cartesJoueesParJoueur[_joueurActuel!] ??= [];
     _cartesJoueesParJoueur[_joueurActuel!]!.add(carte);
 
-    // If this is the player's card, remove it and track it
+    // Remove the card from the player's hand
     if (_joueurActuel == _parametres?.positionJoueur) {
       _cartesJoueur.removeWhere(
         (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
       );
       _cartesJouees.add(carte);
-      _cartesParJoueur[_joueurActuel!]?.removeWhere(
-        (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
-      );
     }
+    
+    // Remove from the player's card tracking
+    _cartesParJoueur[_joueurActuel!]?.removeWhere(
+      (c) => c.couleur == carte.couleur && c.valeur == carte.valeur,
+    );
 
     // Move to next player
     if (_parametres != null) {

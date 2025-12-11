@@ -59,7 +59,7 @@ class PlayerCardsWidget extends StatelessWidget {
 
       for (final carte in cartesAffichees) {
         final estJouee = etatJeu.estCarteJoueeParJoueur(position, carte);
-        final estValide = !estJouee ? etatJeu.peutJouerCarte(carte) : false;
+        final estValide = !estJouee ? etatJeu.peutJouerCartePosition(carte, position) : false;
 
         toutesLesCartes.add(
           Column(
