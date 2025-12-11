@@ -13,6 +13,7 @@ import 'package:dimdim_belote/screens/jeu_screen/completed_plis_history.dart';
 import 'package:dimdim_belote/screens/jeu_screen/player_cards_widget.dart';
 import 'package:dimdim_belote/screens/jeu_screen/missing_colors_card.dart';
 import 'package:dimdim_belote/screens/jeu_screen/points_breakdown_widget.dart';
+import 'package:dimdim_belote/screens/distribution_screen.dart';
 
 class JeuScreen extends StatefulWidget {
   const JeuScreen({super.key});
@@ -74,6 +75,95 @@ class _JeuScreenState extends State<JeuScreen> {
       position: position,
       jouerCarte: _jouerCarte,
     );
+  }
+
+  void _finaliserMain(BuildContext context, EtatJeu etatJeu) {
+    // Finalize the main (add points to totals)
+    etatJeu.finaliserMain();
+
+    // Check if winning condition is met
+    final parametres = etatJeu.parametres;
+    if (parametres == null) return;
+
+    bool jeuTermine = false;
+    String? equipeGagnante;
+
+    if (parametres.conditionFin == ConditionFin.points) {
+      // Check if either team reached the point threshold
+      if (etatJeu.pointsTotauxNordSud >= parametres.valeurFin) {
+        jeuTermine = true;
+        equipeGagnante = 'Nord-Sud';
+      } else if (etatJeu.pointsTotauxEstOuest >= parametres.valeurFin) {
+        jeuTermine = true;
+        equipeGagnante = 'Est-Ouest';
+      }
+    } else {
+      // Check if we've reached the number of mains
+      if (etatJeu.nombreMains >= parametres.valeurFin) {
+        jeuTermine = true;
+        // Winner is the team with the most points
+        if (etatJeu.pointsTotauxNordSud > etatJeu.pointsTotauxEstOuest) {
+          equipeGagnante = 'Nord-Sud';
+        } else if (etatJeu.pointsTotauxEstOuest > etatJeu.pointsTotauxNordSud) {
+          equipeGagnante = 'Est-Ouest';
+        } else {
+          equipeGagnante = 'Égalité';
+        }
+      }
+    }
+
+    if (jeuTermine) {
+      // Show victory dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('🎉 Partie terminée !'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  equipeGagnante == 'Égalité'
+                      ? 'La partie se termine sur une égalité !'
+                      : 'L\'équipe $equipeGagnante a gagné !',
+                  style: const TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Nord-Sud: ${etatJeu.pointsTotauxNordSud} points',
+                  style: const TextStyle(fontSize: 14),
+                ),
+                Text(
+                  'Est-Ouest: ${etatJeu.pointsTotauxEstOuest} points',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Reset game and go back to home
+                  etatJeu.reinitialiser();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+                child: const Text('Nouvelle partie'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Continue to next main - go to distribution screen
+      etatJeu.nouvelleMain();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DistributionScreen(),
+        ),
+      );
+    }
   }
 
   @override
@@ -143,6 +233,49 @@ class _JeuScreenState extends State<JeuScreen> {
                   if (etatJeu.plisTermines.isNotEmpty &&
                       _afficherTousLesPlis) ...[
                     CompletedPlisHistory(etatJeu: etatJeu),
+                  ],
+
+                  // Finalize main button when all 8 plis are complete
+                  if (etatJeu.nombrePlis == 8 && !etatJeu.mainFinalisee) ...[
+                    const SizedBox(height: 16),
+                    Card(
+                      color: Colors.green.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Main terminée !',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () {
+                                _finaliserMain(context, etatJeu);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.all(16),
+                                backgroundColor: Colors.green,
+                              ),
+                              child: const Text(
+                                'Finaliser cette main et continuer',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
 
                   // All players' cards (everyone can play since it's a helper app)

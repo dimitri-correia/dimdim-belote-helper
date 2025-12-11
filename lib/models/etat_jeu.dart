@@ -85,6 +85,7 @@ class EtatJeu extends ChangeNotifier {
   int get pointsEstOuest => _pointsEstOuest;
   int get pointsTotauxNordSud => _pointsTotauxNordSud;
   int get pointsTotauxEstOuest => _pointsTotauxEstOuest;
+  bool get mainFinalisee => _mainFinalisee;
   List<CarteJouee> get pliActuel => _pliActuel;
   Position? get premierJoueurPli => _premierJoueurPli;
   List<Carte> get cartesJouees => _cartesJouees;

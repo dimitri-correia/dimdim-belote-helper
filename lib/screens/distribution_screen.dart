@@ -4,6 +4,8 @@ import 'package:dimdim_belote/models/etat_jeu.dart';
 import 'package:dimdim_belote/models/carte.dart';
 import 'package:dimdim_belote/models/position.dart';
 import 'package:dimdim_belote/screens/encheres_screen.dart';
+import 'package:dimdim_belote/screens/jeu_screen/total_game_points_card.dart';
+import 'package:dimdim_belote/screens/jeu_screen/points_breakdown_widget.dart';
 
 class DistributionScreen extends StatefulWidget {
   const DistributionScreen({super.key});
@@ -78,6 +80,10 @@ class _DistributionScreenState extends State<DistributionScreen> {
     });
   }
 
+  Widget _buildPointsBreakdown(EtatJeu etatJeu) {
+    return PointsBreakdownWidget(etatJeu: etatJeu);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,25 +91,35 @@ class _DistributionScreenState extends State<DistributionScreen> {
         title: const Text('DIMDIM BELOTE - Distribution'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              color: Colors.blue.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-                  'Sélectionnez vos 8 cartes (${_cartesSelectionnees.length}/8)',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+      body: Consumer<EtatJeu>(
+        builder: (context, etatJeu, child) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Show total points if this is not the first main
+                if (etatJeu.nombreMains > 0) ...[
+                  TotalGamePointsCard(
+                    etatJeu: etatJeu,
+                    buildPointsBreakdown: _buildPointsBreakdown,
                   ),
-                  textAlign: TextAlign.center,
+                  const SizedBox(height: 8),
+                ],
+                Card(
+                  color: Colors.blue.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text(
+                      'Sélectionnez vos 8 cartes (${_cartesSelectionnees.length}/8)',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
-              ),
-            ),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
@@ -298,8 +314,10 @@ class _DistributionScreenState extends State<DistributionScreen> {
                 style: const TextStyle(fontSize: 15),
               ),
             ),
-          ],
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
