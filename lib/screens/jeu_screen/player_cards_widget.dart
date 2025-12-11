@@ -15,6 +15,39 @@ class PlayerCardsWidget extends StatelessWidget {
     required this.jouerCarte,
   });
 
+  /// Compare two cards for sorting
+  /// Returns negative if a should come before b, positive if b should come before a
+  /// Cards are sorted in descending order of value (highest value first)
+  int _comparerCartes(Carte a, Carte b, bool estAtout) {
+    if (estAtout) {
+      // Trump order: Valet (20) > 9 (14) > As (11) > 10 (10) > Roi (4) > Dame (3) > 8 (0) > 7 (0)
+      const ordre = [
+        Valeur.valet,  // 20 points
+        Valeur.neuf,   // 14 points
+        Valeur.as,     // 11 points
+        Valeur.dix,    // 10 points
+        Valeur.roi,    // 4 points
+        Valeur.dame,   // 3 points
+        Valeur.huit,   // 0 points
+        Valeur.sept,   // 0 points
+      ];
+      return ordre.indexOf(a.valeur).compareTo(ordre.indexOf(b.valeur));
+    } else {
+      // Non-trump order: As (11) > 10 (10) > Roi (4) > Dame (3) > Valet (2) > 9 (0) > 8 (0) > 7 (0)
+      const ordre = [
+        Valeur.as,     // 11 points
+        Valeur.dix,    // 10 points
+        Valeur.roi,    // 4 points
+        Valeur.dame,   // 3 points
+        Valeur.valet,  // 2 points
+        Valeur.neuf,   // 0 points
+        Valeur.huit,   // 0 points
+        Valeur.sept,   // 0 points
+      ];
+      return ordre.indexOf(a.valeur).compareTo(ordre.indexOf(b.valeur));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final parametres = etatJeu.parametres;
@@ -75,11 +108,19 @@ class PlayerCardsWidget extends StatelessWidget {
       cartesByCouleur.putIfAbsent(carte.couleur, () => []).add(carte);
     }
 
+    // Get trump color for sorting
+    final trumpCouleur = etatJeu.atoutCouleur;
+
     // Flatten all cards into a single list, grouped by color
     final toutesLesCartes = <Widget>[];
     for (final couleur in Couleur.values) {
       final cartesAffichees = cartesByCouleur[couleur] ?? [];
       if (cartesAffichees.isEmpty) continue;
+
+      // Sort cards within this color by value
+      // If this color is trump, use trump order; otherwise use non-trump order
+      final estAtout = trumpCouleur != null && couleur == trumpCouleur;
+      cartesAffichees.sort((a, b) => _comparerCartes(a, b, estAtout));
 
       for (final carte in cartesAffichees) {
         final estJouee = etatJeu.estCarteJoueeParJoueur(position, carte);
