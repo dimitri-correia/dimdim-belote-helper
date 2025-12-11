@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:dimdim_belote_helper/models/etat_jeu.dart';
-import 'package:dimdim_belote_helper/models/annonce.dart';
-import 'package:dimdim_belote_helper/models/position.dart';
-import 'package:dimdim_belote_helper/screens/jeu_screen.dart';
+import 'package:dimdim_belote/models/etat_jeu.dart';
+import 'package:dimdim_belote/models/annonce.dart';
+import 'package:dimdim_belote/models/position.dart';
+import 'package:dimdim_belote/screens/jeu_screen.dart';
 
 class EncheresScreen extends StatefulWidget {
   const EncheresScreen({super.key});

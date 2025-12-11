@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dimdim_belote_helper/models/etat_jeu.dart';
-import 'package:dimdim_belote_helper/models/position.dart';
-import 'package:dimdim_belote_helper/models/carte.dart';
-import 'package:dimdim_belote_helper/models/annonce.dart';
+import 'package:dimdim_belote/models/etat_jeu.dart';
+import 'package:dimdim_belote/models/position.dart';
+import 'package:dimdim_belote/models/carte.dart';
+import 'package:dimdim_belote/models/annonce.dart';
 
 void main() {
   group('EtatJeu Tests', () {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dimdim_belote_helper/main.dart';
+import 'package:dimdim_belote/main.dart';
 
 void main() {
   testWidgets('App loads with welcome screen', (WidgetTester tester) async {

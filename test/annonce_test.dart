@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dimdim_belote_helper/models/annonce.dart';
-import 'package:dimdim_belote_helper/models/position.dart';
+import 'package:dimdim_belote/models/annonce.dart';
+import 'package:dimdim_belote/models/position.dart';
 
 void main() {
   group('Annonce Tests', () {

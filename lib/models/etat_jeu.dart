@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:dimdim_belote_helper/models/position.dart';
-import 'package:dimdim_belote_helper/models/carte.dart';
-import 'package:dimdim_belote_helper/models/annonce.dart';
+import 'package:dimdim_belote/models/position.dart';
+import 'package:dimdim_belote/models/carte.dart';
+import 'package:dimdim_belote/models/annonce.dart';
 
 enum ConditionFin {
   points,

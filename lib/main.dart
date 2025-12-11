@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:dimdim_belote_helper/models/etat_jeu.dart';
-import 'package:dimdim_belote_helper/screens/parametres_screen.dart';
+import 'package:dimdim_belote/models/etat_jeu.dart';
+import 'package:dimdim_belote/screens/parametres_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => EtatJeu(),
       child: MaterialApp(
-        title: 'Belote Contrée Helper',
+        title: 'Dimdim Belote',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
@@ -34,7 +34,7 @@ class EcranAccueil extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Belote Contrée Helper'),
+        title: const Text('Dimdim Belote'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Center(

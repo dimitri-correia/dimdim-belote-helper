@@ -1,4 +1,4 @@
-import 'package:dimdim_belote_helper/models/position.dart';
+import 'package:dimdim_belote/models/position.dart';
 
 enum TypeAnnonce {
   passe,

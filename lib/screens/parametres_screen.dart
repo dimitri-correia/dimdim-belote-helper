@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:dimdim_belote_helper/models/etat_jeu.dart';
-import 'package:dimdim_belote_helper/screens/distribution_screen.dart';
+import 'package:dimdim_belote/models/etat_jeu.dart';
+import 'package:dimdim_belote/screens/distribution_screen.dart';
 
 class ParametresScreen extends StatefulWidget {
   const ParametresScreen({super.key});

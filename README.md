@@ -1,6 +1,6 @@
-# Dimdim Belote Helper
+# Dimdim Belote
 
-Une application Flutter pour aider à gérer vos parties de Belote Contrée.
+Une application Flutter pour gérer vos parties de Belote Contrée.
 
 ## Fonctionnalités
 

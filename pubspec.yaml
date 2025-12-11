@@ -1,5 +1,5 @@
-name: dimdim_belote_helper
-description: A Belote Contrée helper app for managing games
+name: dimdim_belote
+description: A Belote Contrée app for managing games
 publish_to: 'none'
 version: 1.0.0+1
 

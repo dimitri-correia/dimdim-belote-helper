@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:dimdim_belote_helper/models/etat_jeu.dart';
-import 'package:dimdim_belote_helper/models/carte.dart';
-import 'package:dimdim_belote_helper/models/position.dart';
+import 'package:dimdim_belote/models/etat_jeu.dart';
+import 'package:dimdim_belote/models/carte.dart';
+import 'package:dimdim_belote/models/position.dart';
 
 class JeuScreen extends StatefulWidget {
   const JeuScreen({super.key});

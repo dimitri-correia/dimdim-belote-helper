@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dimdim_belote_helper/models/carte.dart';
+import 'package:dimdim_belote/models/carte.dart';
 
 void main() {
   group('Carte Tests', () {
