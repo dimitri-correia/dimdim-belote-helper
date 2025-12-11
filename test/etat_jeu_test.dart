@@ -464,6 +464,40 @@ void main() {
       expect(etatJeu.tousOntPasse, false);
     });
 
+    test('TousOntPasse - clear cards after all pass', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+      
+      // Set some cards
+      final cartes = [
+        Carte(couleur: Couleur.pique, valeur: Valeur.as),
+        Carte(couleur: Couleur.coeur, valeur: Valeur.roi),
+      ];
+      etatJeu.definirCartes(cartes);
+      expect(etatJeu.cartesJoueur.length, 2);
+
+      // All 4 players pass
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.ouest, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+
+      expect(etatJeu.tousOntPasse, true);
+      
+      // Simulate what happens when returning to distribution screen
+      etatJeu.reinitialiserAnnonces();
+      etatJeu.definirCartes([]); // Clear cards
+      
+      expect(etatJeu.cartesJoueur, isEmpty);
+      expect(etatJeu.annonces, isEmpty);
+    });
+
     test('Doit terminer encheres - une prise puis 3 passes', () {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
