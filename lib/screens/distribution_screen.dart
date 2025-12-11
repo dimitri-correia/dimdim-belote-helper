@@ -18,6 +18,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
   final List<Carte> _cartesSelectionnees = [];
   final List<List<Carte>> _toutesCartes = [];
   Position? _positionDonneur;
+  int _previousEtatJeuCardsLength = 0;
 
   @override
   void initState() {
@@ -94,14 +95,20 @@ class _DistributionScreenState extends State<DistributionScreen> {
       body: Consumer<EtatJeu>(
         builder: (context, etatJeu, child) {
           // Clear local selection if EtatJeu cards have been cleared (e.g., after all-pass)
-          if (etatJeu.cartesJoueur.isEmpty && _cartesSelectionnees.isNotEmpty) {
+          // Only clear when transitioning from non-empty to empty (not during initial state)
+          final currentCardsLength = etatJeu.cartesJoueur.length;
+          if (_previousEtatJeuCardsLength > 0 && currentCardsLength == 0 && _cartesSelectionnees.isNotEmpty) {
             // Use post-frame callback to avoid modifying state during build
             WidgetsBinding.instance.addPostFrameCallback((_) {
               setState(() {
                 _cartesSelectionnees.clear();
                 _positionDonneur = null;
+                _previousEtatJeuCardsLength = 0;
               });
             });
+          } else {
+            // Track the current length for next comparison
+            _previousEtatJeuCardsLength = currentCardsLength;
           }
           
           return Padding(
