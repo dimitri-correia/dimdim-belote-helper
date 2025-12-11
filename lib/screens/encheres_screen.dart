@@ -122,6 +122,8 @@ class _EncheresScreenState extends State<EncheresScreen> {
     // Use post-frame callback to avoid navigation during build
     if (etatJeu.tousOntPasse) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Reset bidding state before going back
+        etatJeu.reinitialiserAnnonces();
         // No one bid - navigate back to distribution to re-draw cards
         Navigator.pop(context);
       });
