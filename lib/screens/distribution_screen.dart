@@ -88,6 +88,14 @@ class _DistributionScreenState extends State<DistributionScreen> {
     return false;
   }
 
+  bool _peutSelectionnerCarte(Carte carte) {
+    final estSelectionnee = _estSelectionnee(carte);
+    final estDejaAssignee = _estCarteDejaAssignee(carte);
+    
+    // Can select if: already selected by current player, OR not assigned to anyone else
+    return estSelectionnee || !estDejaAssignee;
+  }
+
   int _calculerPointsCouleur(Couleur couleur, bool estAtout) {
     return _cartesParJoueur[_joueurSelectionne]!
         .where((carte) => carte.couleur == couleur)
@@ -248,6 +256,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                             children: cartesCouleur.map((carte) {
                               final estSelectionnee = _estSelectionnee(carte);
                               final estDejaAssignee = _estCarteDejaAssignee(carte);
+                              final peutSelectionner = _peutSelectionnerCarte(carte);
 
                               return FilterChip(
                                 label: Text(
@@ -265,9 +274,9 @@ class _DistributionScreenState extends State<DistributionScreen> {
                                   ),
                                 ),
                                 selected: estSelectionnee,
-                                onSelected: estDejaAssignee && !estSelectionnee
-                                    ? null
-                                    : (_) => _toggleCarte(carte),
+                                onSelected: peutSelectionner
+                                    ? (_) => _toggleCarte(carte)
+                                    : null,
                                 selectedColor: Colors.blue,
                                 checkmarkColor: Colors.white,
                                 disabledColor: Colors.grey.shade300,
