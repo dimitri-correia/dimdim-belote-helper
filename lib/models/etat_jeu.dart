@@ -288,6 +288,7 @@ class EtatJeu extends ChangeNotifier {
   static const int pointsDefenseContratChute = 160;
 
   /// Check if a card can be legally played based on Belote rules
+  /// This is used for the main player during the game phase
   bool peutJouerCarte(Carte carte) {
     if (_joueurActuel == null || _parametres == null) return false;
     
@@ -299,6 +300,46 @@ class EtatJeu extends ChangeNotifier {
       return false;
     }
     
+    // Delegate to the shared validation logic
+    return _validerCartePourJoueur(carte, _cartesJoueur);
+  }
+
+  /// Check if a card can be legally played based on Belote rules for any position
+  /// This is used in the helper app to allow inputting cards for all players
+  bool peutJouerCartePosition(Carte carte, Position position) {
+    if (_joueurActuel == null || _parametres == null) return false;
+    
+    // Only allow playing for the current player in turn
+    if (_joueurActuel != position) return false;
+    
+    // For the main player, check their actual hand and apply strict validation
+    if (position == _parametres!.positionJoueur) {
+      if (!_cartesJoueur.any((c) => c.couleur == carte.couleur && c.valeur == carte.valeur)) {
+        return false;
+      }
+      return _validerCartePourJoueur(carte, _cartesJoueur);
+    }
+    
+    // For other players (in a helper app), allow any card that hasn't been played yet
+    // The user is manually tracking what other players play
+    
+    // Check if card has already been played by this player
+    if (estCarteJoueeParJoueur(position, carte)) {
+      return false;
+    }
+    
+    // Check if card has already been played by anyone
+    if (estCarteJoueeParQuiconque(carte)) {
+      return false;
+    }
+    
+    // Allow the card to be played for other players
+    // (the user knows what card was played and is entering it)
+    return true;
+  }
+
+  /// Shared validation logic for checking if a card play follows Belote rules
+  bool _validerCartePourJoueur(Carte carte, List<Carte> cartesJoueur) {
     // First card of pli can always be played
     if (_pliActuel.isEmpty) return true;
     
@@ -306,7 +347,7 @@ class EtatJeu extends ChangeNotifier {
     final trumpCouleur = atoutCouleur;
     
     // Check if player has any cards of requested suit
-    final aCartesCouleurDemandee = _cartesJoueur.any((c) => c.couleur == couleurDemandee);
+    final aCartesCouleurDemandee = cartesJoueur.any((c) => c.couleur == couleurDemandee);
     
     // Must follow suit if possible
     if (aCartesCouleurDemandee) {
@@ -315,7 +356,7 @@ class EtatJeu extends ChangeNotifier {
     
     // If can't follow suit and trump exists, must play trump if possible
     if (trumpCouleur != null) {
-      final aCartesAtout = _cartesJoueur.any((c) => c.couleur == trumpCouleur);
+      final aCartesAtout = cartesJoueur.any((c) => c.couleur == trumpCouleur);
       
       if (aCartesAtout) {
         // Must play trump
@@ -337,7 +378,7 @@ class EtatJeu extends ChangeNotifier {
           }
           
           // Check if player has a higher trump
-          final atoutsDisponibles = _cartesJoueur.where((c) => c.couleur == trumpCouleur).toList();
+          final atoutsDisponibles = cartesJoueur.where((c) => c.couleur == trumpCouleur).toList();
           final aPlusHautAtout = atoutsDisponibles.any(
             (c) => _comparerCartes(c, plusHautAtout, null) < 0
           );

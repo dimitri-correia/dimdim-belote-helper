@@ -25,24 +25,42 @@ class PlayerCardsWidget extends StatelessWidget {
     // Get played and remaining cards for this position
     final cartesJouees = etatJeu.cartesJoueesParJoueur[position] ?? [];
 
-    // Combine current and played cards
-    final cartesCourantes = estJoueurPrincipal
-        ? etatJeu.cartesJoueur
-        : etatJeu.getCartesJoueur(position);
-
     // Use a Set to track unique cards efficiently
     final cartesUniques = <String, Carte>{};
 
-    // Add current cards
-    for (final carte in cartesCourantes) {
-      final key = '${carte.couleur.index}_${carte.valeur.index}';
-      cartesUniques[key] = carte;
-    }
-
-    // Add played cards (Map keys automatically handle duplicates)
-    for (final carte in cartesJouees) {
-      final key = '${carte.couleur.index}_${carte.valeur.index}';
-      cartesUniques[key] = carte;
+    // For the main player, show their actual cards
+    if (estJoueurPrincipal) {
+      // Add current cards from their hand
+      for (final carte in etatJeu.cartesJoueur) {
+        final key = '${carte.couleur.index}_${carte.valeur.index}';
+        cartesUniques[key] = carte;
+      }
+      // Add played cards
+      for (final carte in cartesJouees) {
+        final key = '${carte.couleur.index}_${carte.valeur.index}';
+        cartesUniques[key] = carte;
+      }
+    } else {
+      // For other players, show all cards that haven't been played by anyone yet
+      // (plus the cards they've already played, for reference)
+      
+      // Add all their played cards
+      for (final carte in cartesJouees) {
+        final key = '${carte.couleur.index}_${carte.valeur.index}';
+        cartesUniques[key] = carte;
+      }
+      
+      // Add all unplayed cards as possibilities
+      for (final couleur in Couleur.values) {
+        for (final valeur in Valeur.values) {
+          final carte = Carte(couleur: couleur, valeur: valeur);
+          // Only add if not played by anyone yet
+          if (!etatJeu.estCarteJoueeParQuiconque(carte)) {
+            final key = '${carte.couleur.index}_${carte.valeur.index}';
+            cartesUniques[key] = carte;
+          }
+        }
+      }
     }
 
     // Group cards by color once and sort them
@@ -59,7 +77,7 @@ class PlayerCardsWidget extends StatelessWidget {
 
       for (final carte in cartesAffichees) {
         final estJouee = etatJeu.estCarteJoueeParJoueur(position, carte);
-        final estValide = !estJouee ? etatJeu.peutJouerCarte(carte) : false;
+        final estValide = !estJouee ? etatJeu.peutJouerCartePosition(carte, position) : false;
 
         toutesLesCartes.add(
           Column(
