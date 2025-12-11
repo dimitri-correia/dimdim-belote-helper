@@ -202,6 +202,14 @@ void main() {
         Carte(couleur: Couleur.pique, valeur: Valeur.as),
       ]);
 
+      // Add a bid so there's a preneur
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.est,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      ));
+
       etatJeu.commencerJeu();
 
       expect(etatJeu.nombrePlis, 0);
@@ -209,7 +217,7 @@ void main() {
       expect(etatJeu.pointsEstOuest, 0);
       expect(etatJeu.pliActuel, isEmpty);
       expect(etatJeu.cartesJouees, isEmpty);
-      expect(etatJeu.joueurActuel, Position.est); // First player after dealer
+      expect(etatJeu.joueurActuel, Position.est); // First player is the bidder (Est)
       expect(etatJeu.premierJoueurPli, Position.est);
     });
 
