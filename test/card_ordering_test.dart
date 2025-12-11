@@ -6,31 +6,37 @@ void main() {
     /// Compare two cards for sorting (same as in PlayerCardsWidget)
     int comparerCartes(Carte a, Carte b, bool estAtout) {
       if (estAtout) {
-        // Trump order: Valet (20) > 9 (14) > As (11) > 10 (10) > Roi (4) > Dame (3) > 8 (0) > 7 (0)
+        // Trump order (low to high): 7, 8, Dame, Roi, 10, As, 9, Valet
         const ordre = [
-          Valeur.valet,  // 20 points
+          Valeur.sept,   // 0 points
+          Valeur.huit,   // 0 points
+          Valeur.dame,   // 3 points
+          Valeur.roi,    // 4 points
+          Valeur.dix,    // 10 points
+          Valeur.as,     // 11 points
           Valeur.neuf,   // 14 points
-          Valeur.as,     // 11 points
-          Valeur.dix,    // 10 points
-          Valeur.roi,    // 4 points
-          Valeur.dame,   // 3 points
-          Valeur.huit,   // 0 points
-          Valeur.sept,   // 0 points
+          Valeur.valet,  // 20 points
         ];
-        return ordre.indexOf(a.valeur).compareTo(ordre.indexOf(b.valeur));
+        final indexA = ordre.indexOf(a.valeur);
+        final indexB = ordre.indexOf(b.valeur);
+        // Higher index = stronger card, so reverse the comparison for descending sort
+        return indexB.compareTo(indexA);
       } else {
-        // Non-trump order: As (11) > 10 (10) > Roi (4) > Dame (3) > Valet (2) > 9 (0) > 8 (0) > 7 (0)
+        // Non-trump order (low to high): 7, 8, 9, Valet, Dame, Roi, 10, As
         const ordre = [
-          Valeur.as,     // 11 points
-          Valeur.dix,    // 10 points
-          Valeur.roi,    // 4 points
-          Valeur.dame,   // 3 points
-          Valeur.valet,  // 2 points
-          Valeur.neuf,   // 0 points
-          Valeur.huit,   // 0 points
           Valeur.sept,   // 0 points
+          Valeur.huit,   // 0 points
+          Valeur.neuf,   // 0 points
+          Valeur.valet,  // 2 points
+          Valeur.dame,   // 3 points
+          Valeur.roi,    // 4 points
+          Valeur.dix,    // 10 points
+          Valeur.as,     // 11 points
         ];
-        return ordre.indexOf(a.valeur).compareTo(ordre.indexOf(b.valeur));
+        final indexA = ordre.indexOf(a.valeur);
+        final indexB = ordre.indexOf(b.valeur);
+        // Higher index = stronger card, so reverse the comparison for descending sort
+        return indexB.compareTo(indexA);
       }
     }
 
