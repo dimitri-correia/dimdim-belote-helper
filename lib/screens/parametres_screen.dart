@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dimdim_belote_helper/models/etat_jeu.dart';
-import 'package:dimdim_belote_helper/models/position.dart';
 import 'package:dimdim_belote_helper/screens/distribution_screen.dart';
 
 class ParametresScreen extends StatefulWidget {
@@ -14,7 +13,6 @@ class ParametresScreen extends StatefulWidget {
 class _ParametresScreenState extends State<ParametresScreen> {
   ConditionFin _conditionFin = ConditionFin.points;
   int _valeurFin = 1000;
-  Position _positionJoueur = Position.sud;
   SensRotation _sensRotation = SensRotation.horaire;
 
   @override
@@ -126,42 +124,6 @@ class _ParametresScreenState extends State<ParametresScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Votre position',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<Position>(
-                      initialValue: _positionJoueur,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                      items: Position.values
-                          .map((position) => DropdownMenuItem(
-                                value: position,
-                                child: Text(position.nom),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _positionJoueur = value!;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
                       'Sens de rotation',
                       style: TextStyle(
                         fontSize: 15,
@@ -219,7 +181,6 @@ class _ParametresScreenState extends State<ParametresScreen> {
                 final parametres = ParametresJeu(
                   conditionFin: _conditionFin,
                   valeurFin: _valeurFin,
-                  positionJoueur: _positionJoueur,
                   sensRotation: _sensRotation,
                 );
 

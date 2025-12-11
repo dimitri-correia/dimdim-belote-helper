@@ -275,7 +275,6 @@ class _DistributionScreenState extends State<DistributionScreen> {
                             etatJeu.definirParametres(ParametresJeu(
                               conditionFin: parametres.conditionFin,
                               valeurFin: parametres.valeurFin,
-                              positionJoueur: parametres.positionJoueur,
                               sensRotation: parametres.sensRotation,
                               positionDonneur: _positionDonneur,
                             ));

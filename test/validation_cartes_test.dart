@@ -13,7 +13,6 @@ void main() {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
         valeurFin: 1000,
-        positionJoueur: Position.sud,
         sensRotation: SensRotation.horaire,
         positionDonneur: Position.nord,
       );
@@ -187,7 +186,6 @@ void main() {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
         valeurFin: 1000,
-        positionJoueur: Position.sud,
         sensRotation: SensRotation.horaire,
         positionDonneur: Position.nord,
       );
@@ -239,7 +237,6 @@ void main() {
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
         valeurFin: 1000,
-        positionJoueur: Position.sud,
         sensRotation: SensRotation.horaire,
         positionDonneur: Position.nord,
       );

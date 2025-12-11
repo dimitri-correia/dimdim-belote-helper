@@ -16,14 +16,15 @@ enum SensRotation {
 class ParametresJeu {
   final ConditionFin conditionFin;
   final int valeurFin; // nombre de points ou de plis
-  final Position positionJoueur;
   final SensRotation sensRotation;
   final Position? positionDonneur; // position du donneur (dealer)
+
+  // Player is always in Position.sud for easier tracking
+  Position get positionJoueur => Position.sud;
 
   ParametresJeu({
     required this.conditionFin,
     required this.valeurFin,
-    required this.positionJoueur,
     required this.sensRotation,
     this.positionDonneur,
   });
