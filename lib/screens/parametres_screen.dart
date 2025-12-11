@@ -43,24 +43,46 @@ class _ParametresScreenState extends State<ParametresScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    RadioListTile<ConditionFin>(
+                    // ignore: deprecated_member_use
+                    ListTile(
                       title: const Text('Points'),
-                      value: ConditionFin.points,
-                      groupValue: _conditionFin,
-                      onChanged: (value) {
+                      leading: Radio<ConditionFin>(
+                        value: ConditionFin.points,
+                        // ignore: deprecated_member_use
+                        groupValue: _conditionFin,
+                        // ignore: deprecated_member_use
+                        onChanged: (value) {
+                          setState(() {
+                            _conditionFin = value!;
+                            _valeurFin = 1000;
+                          });
+                        },
+                      ),
+                      onTap: () {
                         setState(() {
-                          _conditionFin = value!;
+                          _conditionFin = ConditionFin.points;
                           _valeurFin = 1000;
                         });
                       },
                     ),
-                    RadioListTile<ConditionFin>(
+                    // ignore: deprecated_member_use
+                    ListTile(
                       title: const Text('Nombre de plis'),
-                      value: ConditionFin.plis,
-                      groupValue: _conditionFin,
-                      onChanged: (value) {
+                      leading: Radio<ConditionFin>(
+                        value: ConditionFin.plis,
+                        // ignore: deprecated_member_use
+                        groupValue: _conditionFin,
+                        // ignore: deprecated_member_use
+                        onChanged: (value) {
+                          setState(() {
+                            _conditionFin = value!;
+                            _valeurFin = 10;
+                          });
+                        },
+                      ),
+                      onTap: () {
                         setState(() {
-                          _conditionFin = value!;
+                          _conditionFin = ConditionFin.plis;
                           _valeurFin = 10;
                         });
                       },
@@ -112,7 +134,7 @@ class _ParametresScreenState extends State<ParametresScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<Position>(
-                      value: _positionJoueur,
+                      initialValue: _positionJoueur,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                       ),
@@ -147,23 +169,43 @@ class _ParametresScreenState extends State<ParametresScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    RadioListTile<SensRotation>(
+                    // ignore: deprecated_member_use
+                    ListTile(
                       title: const Text('Horaire'),
-                      value: SensRotation.horaire,
-                      groupValue: _sensRotation,
-                      onChanged: (value) {
+                      leading: Radio<SensRotation>(
+                        value: SensRotation.horaire,
+                        // ignore: deprecated_member_use
+                        groupValue: _sensRotation,
+                        // ignore: deprecated_member_use
+                        onChanged: (value) {
+                          setState(() {
+                            _sensRotation = value!;
+                          });
+                        },
+                      ),
+                      onTap: () {
                         setState(() {
-                          _sensRotation = value!;
+                          _sensRotation = SensRotation.horaire;
                         });
                       },
                     ),
-                    RadioListTile<SensRotation>(
+                    // ignore: deprecated_member_use
+                    ListTile(
                       title: const Text('Anti-horaire'),
-                      value: SensRotation.antihoraire,
-                      groupValue: _sensRotation,
-                      onChanged: (value) {
+                      leading: Radio<SensRotation>(
+                        value: SensRotation.antihoraire,
+                        // ignore: deprecated_member_use
+                        groupValue: _sensRotation,
+                        // ignore: deprecated_member_use
+                        onChanged: (value) {
+                          setState(() {
+                            _sensRotation = value!;
+                          });
+                        },
+                      ),
+                      onTap: () {
                         setState(() {
-                          _sensRotation = value!;
+                          _sensRotation = SensRotation.antihoraire;
                         });
                       },
                     ),

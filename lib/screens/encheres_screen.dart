@@ -259,8 +259,8 @@ class _EncheresScreenState extends State<EncheresScreen> {
                           return ListTile(
                             dense: true,
                             leading: CircleAvatar(
-                              child: Text(annonce.joueur.nom[0]),
                               radius: 16,
+                              child: Text(annonce.joueur.nom[0]),
                             ),
                             title: Text(annonce.texte),
                           );
@@ -412,14 +412,23 @@ class _EncheresScreenState extends State<EncheresScreen> {
                                                 valeurMin != null &&
                                                 v >= valeurMin)
                                             .map((valeur) {
-                                          return RadioListTile<int>(
-                                            title: Text(valeur.toString()),
-                                            value: valeur,
-                                            groupValue: _valeurSelectionnee,
+                                          return ListTile(
                                             dense: true,
-                                            onChanged: (value) {
+                                            title: Text(valeur.toString()),
+                                            leading: Radio<int>(
+                                              value: valeur,
+                                              // ignore: deprecated_member_use
+                                              groupValue: _valeurSelectionnee,
+                                              // ignore: deprecated_member_use
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _valeurSelectionnee = value;
+                                                });
+                                              },
+                                            ),
+                                            onTap: () {
                                               setState(() {
-                                                _valeurSelectionnee = value;
+                                                _valeurSelectionnee = valeur;
                                               });
                                             },
                                           );
@@ -450,14 +459,23 @@ class _EncheresScreenState extends State<EncheresScreen> {
                                     child: ListView(
                                       children:
                                           _couleursDisponibles.map((couleur) {
-                                        return RadioListTile<String>(
-                                          title: Text(couleur),
-                                          value: couleur,
-                                          groupValue: _couleurSelectionnee,
+                                        return ListTile(
                                           dense: true,
-                                          onChanged: (value) {
+                                          title: Text(couleur),
+                                          leading: Radio<String>(
+                                            value: couleur,
+                                            // ignore: deprecated_member_use
+                                            groupValue: _couleurSelectionnee,
+                                            // ignore: deprecated_member_use
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _couleurSelectionnee = value;
+                                              });
+                                            },
+                                          ),
+                                          onTap: () {
                                             setState(() {
-                                              _couleurSelectionnee = value;
+                                              _couleurSelectionnee = couleur;
                                             });
                                           },
                                         );

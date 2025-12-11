@@ -240,7 +240,7 @@ class _DistributionScreenState extends State<DistributionScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<Position>(
-                      value: _positionDonneur,
+                      initialValue: _positionDonneur,
                       decoration: const InputDecoration(
                         hintText: 'Sélectionnez le donneur',
                         border: OutlineInputBorder(),

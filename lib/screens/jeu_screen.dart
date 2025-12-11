@@ -103,9 +103,9 @@ class _JeuScreenState extends State<JeuScreen> {
                 ),
               ] else ...[
                 // Defense wins
-                Text(
+                const Text(
                   '${EtatJeu.pointsDefenseContratChute}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.orange,
@@ -189,9 +189,9 @@ class _JeuScreenState extends State<JeuScreen> {
                 ),
               ] else ...[
                 // Defense wins
-                Text(
+                const Text(
                   '${EtatJeu.pointsDefenseContratChute}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
@@ -941,7 +941,7 @@ class _JeuScreenState extends State<JeuScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                     const SizedBox(height: 16),
                   ],
 
@@ -1027,7 +1027,7 @@ class _JeuScreenState extends State<JeuScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                     const SizedBox(height: 16),
                   ],
 
@@ -1085,11 +1085,11 @@ class _JeuScreenState extends State<JeuScreen> {
                                           ),
                                         ),
                                       );
-                                    }).toList(),
+                                    }),
                                   ],
                                 ),
                               );
-                            }).toList(),
+                            }),
                           ],
                         ),
                       ),

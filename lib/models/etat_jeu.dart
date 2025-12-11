@@ -624,7 +624,6 @@ class EtatJeu extends ChangeNotifier {
     
     // Check if contract was made
     final pointsPrenante = prenantNordSud ? _pointsNordSud : _pointsEstOuest;
-    final pointsDefense = prenantNordSud ? _pointsEstOuest : _pointsNordSud;
     final contractReussi = pointsPrenante >= annonce;
     
     int pointsGagnesNordSud = 0;
