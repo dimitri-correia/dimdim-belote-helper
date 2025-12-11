@@ -18,7 +18,7 @@ class PlayerCardsWidget extends StatelessWidget {
   /// Compare two cards for sorting
   /// Returns negative if a should come before b, positive if b should come before a
   /// Cards are sorted in descending order of value (highest value first)
-  /// 
+  ///
   /// This uses the same ordering as etat_jeu.dart's comparison methods but adapted for sorting
   int _comparerCartes(Carte a, Carte b, bool estAtout) {
     if (estAtout) {
