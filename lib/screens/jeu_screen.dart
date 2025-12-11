@@ -103,9 +103,10 @@ class _JeuScreenState extends State<JeuScreen> {
                 ),
               ] else ...[
                 // Defense wins
-                const Text(
+                // ignore: prefer_const_constructors
+                Text(
                   '${EtatJeu.pointsDefenseContratChute}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.orange,
@@ -189,9 +190,10 @@ class _JeuScreenState extends State<JeuScreen> {
                 ),
               ] else ...[
                 // Defense wins
-                const Text(
+                // ignore: prefer_const_constructors
+                Text(
                   '${EtatJeu.pointsDefenseContratChute}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
