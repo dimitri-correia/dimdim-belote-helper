@@ -355,6 +355,15 @@ class EtatJeu extends ChangeNotifier {
     return true;
   }
 
+  /// Check if two positions are partners (same team)
+  bool _sontPartenaires(Position pos1, Position pos2) {
+    // Nord-Sud are partners, Est-Ouest are partners
+    return (pos1 == Position.nord && pos2 == Position.sud) ||
+        (pos1 == Position.sud && pos2 == Position.nord) ||
+        (pos1 == Position.est && pos2 == Position.ouest) ||
+        (pos1 == Position.ouest && pos2 == Position.est);
+  }
+
   /// Shared validation logic for checking if a card play follows Belote rules
   bool _validerCartePourJoueur(Carte carte, List<Carte> cartesJoueur) {
     // First card of pli can always be played
@@ -392,6 +401,17 @@ class EtatJeu extends ChangeNotifier {
             if (_comparerCartes(atout, plusHautAtout, null) < 0) {
               plusHautAtout = atout;
             }
+          }
+          
+          // Check if partner is currently winning
+          final gagnantActuel = gagnantPliActuel;
+          final currentPlayer = _joueurActuel;
+          
+          // If partner is winning, no need to play higher trump
+          if (currentPlayer != null && gagnantActuel != null && 
+              _sontPartenaires(currentPlayer, gagnantActuel)) {
+            // Partner is winning, any trump is OK
+            return true;
           }
           
           // Check if player has a higher trump
