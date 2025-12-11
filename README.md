@@ -8,8 +8,8 @@ Une application Flutter pour aider à gérer vos parties de Belote Contrée.
 
 1. **Paramètres** : Configurez votre partie
    - Choisissez la condition de fin (points ou nombre de plis)
-   - Définissez votre position à la table (Nord, Sud, Est, Ouest)
    - Sélectionnez le sens de rotation (horaire ou anti-horaire)
+   - Vous êtes toujours positionné au Sud pour simplifier le suivi
 
 2. **Distribution** : Sélectionnez vos cartes et le donneur
    - Interface intuitive pour choisir vos 8 cartes
