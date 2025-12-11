@@ -78,7 +78,6 @@ class PointsBreakdownWidget extends StatelessWidget {
                 ),
               ] else ...[
                 // Defense wins
-                // ignore: prefer_const_constructors
                 Text(
                   '${EtatJeu.pointsDefenseContratChute}',
                   style: const TextStyle(
@@ -167,7 +166,6 @@ class PointsBreakdownWidget extends StatelessWidget {
                 ),
               ] else ...[
                 // Defense wins
-                // ignore: prefer_const_constructors
                 Text(
                   '${EtatJeu.pointsDefenseContratChute}',
                   style: const TextStyle(
