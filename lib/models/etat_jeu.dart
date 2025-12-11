@@ -364,6 +364,18 @@ class EtatJeu extends ChangeNotifier {
         (pos1 == Position.ouest && pos2 == Position.est);
   }
 
+  /// Check if the current player's partner is winning the current pli
+  bool _partnerIsWinning() {
+    final gagnantActuel = gagnantPliActuel;
+    final currentPlayer = _joueurActuel;
+    
+    if (currentPlayer == null || gagnantActuel == null) {
+      return false;
+    }
+    
+    return _sontPartenaires(currentPlayer, gagnantActuel);
+  }
+
   /// Shared validation logic for checking if a card play follows Belote rules
   bool _validerCartePourJoueur(Carte carte, List<Carte> cartesJoueur) {
     // First card of pli can always be played
@@ -403,13 +415,8 @@ class EtatJeu extends ChangeNotifier {
             }
           }
           
-          // Check if partner is currently winning
-          final gagnantActuel = gagnantPliActuel;
-          final currentPlayer = _joueurActuel;
-          
           // If partner is winning, no need to play higher trump
-          if (currentPlayer != null && gagnantActuel != null && 
-              _sontPartenaires(currentPlayer, gagnantActuel)) {
+          if (_partnerIsWinning()) {
             // Partner is winning, any trump is OK
             return true;
           }
