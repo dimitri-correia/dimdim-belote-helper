@@ -41,8 +41,9 @@ class PlayerCardsWidget extends StatelessWidget {
         cartesUniques[key] = carte;
       }
     } else {
-      // For other players, show all cards that haven't been played by anyone yet
-      // (plus the cards they've already played, for reference)
+      // For other players, show:
+      // 1. All cards that haven't been played by anyone yet (as possible cards to play)
+      // 2. The cards this specific player has already played (for reference, shown as disabled)
       
       // Add all their played cards
       for (final carte in cartesJouees) {
@@ -51,6 +52,9 @@ class PlayerCardsWidget extends StatelessWidget {
       }
       
       // Add all unplayed cards as possibilities
+      // Note: We generate all 32 possible cards (4 colors × 8 values) and filter them.
+      // This is acceptable because: 1) The game has only 32 cards total,
+      // 2) The list shrinks as cards are played, and 3) The code is clearer this way.
       for (final couleur in Couleur.values) {
         for (final valeur in Valeur.values) {
           final carte = Carte(couleur: couleur, valeur: valeur);

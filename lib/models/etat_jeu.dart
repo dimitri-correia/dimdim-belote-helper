@@ -306,6 +306,9 @@ class EtatJeu extends ChangeNotifier {
 
   /// Check if a card can be legally played based on Belote rules for any position
   /// This is used in the helper app to allow inputting cards for all players
+  /// 
+  /// For the main player (Position.sud): Applies strict Belote rule validation (must follow suit, must play trump, etc.)
+  /// For other positions (Nord, Est, Ouest): Relaxed validation - only checks that the card hasn't been played yet by anyone
   bool peutJouerCartePosition(Carte carte, Position position) {
     if (_joueurActuel == null || _parametres == null) return false;
     
