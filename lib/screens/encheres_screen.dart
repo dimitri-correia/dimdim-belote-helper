@@ -118,6 +118,16 @@ class _EncheresScreenState extends State<EncheresScreen> {
       _mettreAJourOptions();
     });
 
+    // Check if all players passed - need to re-draw cards
+    // Use post-frame callback to avoid navigation during build
+    if (etatJeu.tousOntPasse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // No one bid - navigate back to distribution to re-draw cards
+        Navigator.pop(context);
+      });
+      return;
+    }
+
     // Check if bidding should end (last speaker's turn again with all others passed)
     // Use post-frame callback to avoid navigation during build
     if (etatJeu.doitTerminerEncheres) {
@@ -200,6 +210,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
           final valeurMin = _obtenirValeurMinimale();
           final peutAnnoncerCapot = _peutAnnoncerCapot();
           final doitTerminer = etatJeu.doitTerminerEncheres;
+          final tousOntPasse = etatJeu.tousOntPasse;
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -271,6 +282,43 @@ class _EncheresScreenState extends State<EncheresScreen> {
                   const SizedBox(height: 16),
                 ],
 
+                // Show message if all players passed - need to re-draw cards
+                if (tousOntPasse) ...[
+                  Card(
+                    color: Colors.orange.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.refresh,
+                            color: Colors.orange,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Tous les joueurs ont passé',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Personne n\'a fait d\'annonce.\nLes cartes vont être redistribuées.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+
                 // Show message if bidding should end, otherwise show bidding options
                 if (doitTerminer) ...[
                   Card(
@@ -309,7 +357,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                 ],
 
                 // Bouton Passe
-                if (!doitTerminer)
+                if (!doitTerminer && !tousOntPasse)
                   ElevatedButton(
                     onPressed: () => _ajouterAnnonce(TypeAnnonce.passe),
                     style: ElevatedButton.styleFrom(
@@ -322,10 +370,10 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                   ),
 
-                if (!doitTerminer) const SizedBox(height: 12),
+                if (!doitTerminer && !tousOntPasse) const SizedBox(height: 12),
 
                 // Bouton Contre
-                if (!doitTerminer && _peutContrer)
+                if (!doitTerminer && !tousOntPasse && _peutContrer)
                   ElevatedButton(
                     onPressed: () => _ajouterAnnonce(TypeAnnonce.contre),
                     style: ElevatedButton.styleFrom(
@@ -338,7 +386,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                   ),
 
-                if (!doitTerminer && _peutSurcontrer)
+                if (!doitTerminer && !tousOntPasse && _peutSurcontrer)
                   ElevatedButton(
                     onPressed: () => _ajouterAnnonce(TypeAnnonce.surcontre),
                     style: ElevatedButton.styleFrom(
@@ -351,12 +399,12 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                   ),
 
-                if (!doitTerminer) const SizedBox(height: 12),
-                if (!doitTerminer) const Divider(),
-                if (!doitTerminer) const SizedBox(height: 12),
+                if (!doitTerminer && !tousOntPasse) const SizedBox(height: 12),
+                if (!doitTerminer && !tousOntPasse) const Divider(),
+                if (!doitTerminer && !tousOntPasse) const SizedBox(height: 12),
 
                 // Section Prise
-                if (!doitTerminer)
+                if (!doitTerminer && !tousOntPasse)
                   const Text(
                     'Faire une annonce:',
                     style: TextStyle(
@@ -364,10 +412,10 @@ class _EncheresScreenState extends State<EncheresScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                if (!doitTerminer) const SizedBox(height: 12),
+                if (!doitTerminer && !tousOntPasse) const SizedBox(height: 12),
 
                 // Checkbox Capot
-                if (!doitTerminer && peutAnnoncerCapot)
+                if (!doitTerminer && !tousOntPasse && peutAnnoncerCapot)
                   CheckboxListTile(
                     title: const Text(
                       'Capot (prendre tous les plis)',
@@ -385,7 +433,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     },
                   ),
 
-                if (!doitTerminer)
+                if (!doitTerminer && !tousOntPasse)
                   Expanded(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,10 +539,10 @@ class _EncheresScreenState extends State<EncheresScreen> {
                     ),
                   ),
 
-                if (!doitTerminer) const SizedBox(height: 12),
+                if (!doitTerminer && !tousOntPasse) const SizedBox(height: 12),
 
                 // Bouton Annoncer
-                if (!doitTerminer)
+                if (!doitTerminer && !tousOntPasse)
                   ElevatedButton(
                     onPressed: (_estCapot && _couleurSelectionnee != null) ||
                             (!_estCapot &&

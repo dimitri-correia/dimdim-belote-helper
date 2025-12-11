@@ -379,13 +379,89 @@ void main() {
 
       etatJeu.definirParametres(parametres);
 
-      // All pass - should not end
+      // All pass - should not end bidding but should trigger card re-draw
       etatJeu.ajouterAnnonce(Annonce(joueur: Position.ouest, type: TypeAnnonce.passe));
       etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
       etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
       etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
 
       expect(etatJeu.doitTerminerEncheres, false);
+      expect(etatJeu.tousOntPasse, true);
+    });
+
+    test('TousOntPasse - pas d\'annonces', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // No announcements yet
+      expect(etatJeu.tousOntPasse, false);
+    });
+
+    test('TousOntPasse - seulement 3 passes', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // Only 3 passes
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.ouest, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+
+      expect(etatJeu.tousOntPasse, false);
+    });
+
+    test('TousOntPasse - 4 passes', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // All 4 players pass
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.ouest, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+
+      expect(etatJeu.tousOntPasse, true);
+    });
+
+    test('TousOntPasse - une prise puis 3 passes', () {
+      final parametres = ParametresJeu(
+        conditionFin: ConditionFin.points,
+        valeurFin: 1000,
+        sensRotation: SensRotation.horaire,
+        positionDonneur: Position.sud,
+      );
+
+      etatJeu.definirParametres(parametres);
+
+      // One bid and 3 passes - not all passed
+      etatJeu.ajouterAnnonce(Annonce(
+        joueur: Position.ouest,
+        type: TypeAnnonce.prise,
+        valeur: 80,
+        couleur: '♠ Pique',
+      ));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.nord, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.est, type: TypeAnnonce.passe));
+      etatJeu.ajouterAnnonce(Annonce(joueur: Position.sud, type: TypeAnnonce.passe));
+
+      expect(etatJeu.tousOntPasse, false);
     });
 
     test('Doit terminer encheres - une prise puis 3 passes', () {

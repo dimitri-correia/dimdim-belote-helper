@@ -94,6 +94,16 @@ class EtatJeu extends ChangeNotifier {
   List<PliTermine> get plisTermines => _plisTermines;
   Map<Position, Set<Couleur>> get couleursManquantes => _couleursManquantes;
 
+  /// Check if all 4 players have passed without any bid.
+  /// In this case, cards should be re-drawn (go back to distribution).
+  bool get tousOntPasse {
+    // Check if we have exactly 4 announcements and all are passes
+    if (_annonces.length != 4) return false;
+    
+    // Verify all announcements are passes
+    return _annonces.every((annonce) => annonce.type == TypeAnnonce.passe);
+  }
+
   /// Check if bidding should end because it's the turn of the last player
   /// who made a non-pass bid and all others have passed since then.
   bool get doitTerminerEncheres {
