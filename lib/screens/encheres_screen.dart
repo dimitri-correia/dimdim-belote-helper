@@ -213,6 +213,33 @@ class _EncheresScreenState extends State<EncheresScreen> {
             sum + (estAtout ? carte.pointsAtout : carte.pointsNonAtout));
   }
 
+  /// Build list of widgets showing points breakdown for all trump scenarios
+  List<Widget> _buildPointsBreakdown(EtatJeu etatJeu) {
+    // Calculate all points once for performance
+    final pointsParCouleur = _calculerTousLesPointsAtout(etatJeu);
+    return Couleur.values.map((couleur) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Text(
+              couleur.symbole,
+              style: TextStyle(
+                fontSize: 16,
+                color: _isRedSuit(couleur) ? Colors.red : Colors.black,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${pointsParCouleur[couleur]} points',
+              style: const TextStyle(fontSize: 13),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
   /// Build widget showing cards by color
   Widget _buildCartesParCouleur(EtatJeu etatJeu) {
     // Group cards by color
@@ -397,33 +424,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          ...() {
-                            // Calculate all points once for performance
-                            final pointsParCouleur = _calculerTousLesPointsAtout(etatJeu);
-                            return Couleur.values.map((couleur) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 2),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      couleur.symbole,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: _isRedSuit(couleur)
-                                            ? Colors.red
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '${pointsParCouleur[couleur]} points',
-                                      style: const TextStyle(fontSize: 13),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            });
-                          }(),
+                          ..._buildPointsBreakdown(etatJeu),
                         ],
                       ),
                     ),
