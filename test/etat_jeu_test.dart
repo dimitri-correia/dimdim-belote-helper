@@ -217,7 +217,7 @@ void main() {
       expect(etatJeu.pointsEstOuest, 0);
       expect(etatJeu.pliActuel, isEmpty);
       expect(etatJeu.cartesJouees, isEmpty);
-      expect(etatJeu.joueurActuel, Position.est); // First player is the bidder (Est)
+      expect(etatJeu.joueurActuel, Position.est); // First player is after dealer (Est)
       expect(etatJeu.premierJoueurPli, Position.est);
     });
 
