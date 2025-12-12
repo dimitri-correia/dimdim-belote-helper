@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:dimdim_belote/models/etat_jeu.dart';
 import 'package:dimdim_belote/models/annonce.dart';
 import 'package:dimdim_belote/models/position.dart';
+import 'package:dimdim_belote/models/carte.dart';
 import 'package:dimdim_belote/screens/jeu_screen.dart';
 
 class EncheresScreen extends StatefulWidget {
@@ -179,6 +180,105 @@ class _EncheresScreenState extends State<EncheresScreen> {
     return valeurMin != null;
   }
 
+  /// Calculate points for a given trump color
+  int _calculerPointsTotaux(EtatJeu etatJeu, Couleur? couleurAtout) {
+    return etatJeu.cartesJoueur.fold(0, (sum, carte) {
+      if (couleurAtout == null) {
+        return sum + carte.pointsNonAtout;
+      } else if (carte.couleur == couleurAtout) {
+        return sum + carte.pointsAtout;
+      } else {
+        return sum + carte.pointsNonAtout;
+      }
+    });
+  }
+
+  /// Calculate points for a specific color in hand
+  int _calculerPointsCouleur(EtatJeu etatJeu, Couleur couleur, bool estAtout) {
+    return etatJeu.cartesJoueur.where((carte) => carte.couleur == couleur).fold(
+        0,
+        (sum, carte) =>
+            sum + (estAtout ? carte.pointsAtout : carte.pointsNonAtout));
+  }
+
+  /// Build widget showing cards by color
+  Widget _buildCartesParCouleur(EtatJeu etatJeu) {
+    // Group cards by color
+    final Map<Couleur, List<Carte>> cartesByCouleur = {};
+    for (final carte in etatJeu.cartesJoueur) {
+      cartesByCouleur[carte.couleur] ??= [];
+      cartesByCouleur[carte.couleur]!.add(carte);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: Couleur.values.map((couleur) {
+        final cartes = cartesByCouleur[couleur] ?? [];
+        if (cartes.isEmpty) return const SizedBox.shrink();
+
+        final pointsAtout = _calculerPointsCouleur(etatJeu, couleur, true);
+        final pointsNonAtout = _calculerPointsCouleur(etatJeu, couleur, false);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              Text(
+                couleur.symbole,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: couleur == Couleur.coeur || couleur == Couleur.carreau
+                      ? Colors.red
+                      : Colors.black,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: cartes.map((carte) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.blue.shade300),
+                      ),
+                      child: Text(
+                        carte.nomValeur,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: couleur == Couleur.coeur || 
+                                 couleur == Couleur.carreau
+                              ? Colors.red
+                              : Colors.black,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'A: $pointsAtout | N: $pointsNonAtout',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -251,6 +351,74 @@ class _EncheresScreenState extends State<EncheresScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Display player's cards and points
+                if (etatJeu.cartesJoueur.isNotEmpty) ...[
+                  Card(
+                    color: Colors.green.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Vos cartes:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildCartesParCouleur(etatJeu),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Card(
+                    color: Colors.amber.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Points en main selon l\'atout:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          for (final couleur in Couleur.values)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    couleur.symbole,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: couleur == Couleur.coeur ||
+                                              couleur == Couleur.carreau
+                                          ? Colors.red
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${_calculerPointsTotaux(etatJeu, couleur)} points',
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Historique des annonces
                 if (etatJeu.annonces.isNotEmpty) ...[
