@@ -12,7 +12,7 @@ void main() {
       etatJeu = EtatJeu();
     });
 
-    test('First player in game phase should be the bidder (preneur) - clockwise', () {
+    test('First player in game phase should be after dealer (not bidder) - clockwise', () {
       // Setup: Nord is dealer, rotation is clockwise
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
@@ -46,12 +46,12 @@ void main() {
       ]);
       etatJeu.commencerJeu();
 
-      // First player should be Sud (the bidder), not Est (right of dealer)
-      expect(etatJeu.joueurActuel, Position.sud);
-      expect(etatJeu.premierJoueurPli, Position.sud);
+      // First player should be Est (right of dealer), not Sud (the bidder)
+      expect(etatJeu.joueurActuel, Position.est);
+      expect(etatJeu.premierJoueurPli, Position.est);
     });
 
-    test('First player in game phase should be the bidder - counter-clockwise', () {
+    test('First player in game phase should be after dealer (not bidder) - counter-clockwise', () {
       // Setup: Sud is dealer, rotation is counter-clockwise
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
@@ -85,12 +85,12 @@ void main() {
       ]);
       etatJeu.commencerJeu();
 
-      // First player should be Nord (the bidder), not Est (right of dealer)
-      expect(etatJeu.joueurActuel, Position.nord);
-      expect(etatJeu.premierJoueurPli, Position.nord);
+      // First player should be Est (right of dealer), not Nord (the bidder)
+      expect(etatJeu.joueurActuel, Position.est);
+      expect(etatJeu.premierJoueurPli, Position.est);
     });
 
-    test('First player when different player bids after passes', () {
+    test('First player is after dealer, even when different player wins bid', () {
       // Setup: Est is dealer, rotation is clockwise
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
@@ -124,12 +124,12 @@ void main() {
       ]);
       etatJeu.commencerJeu();
 
-      // First player should be Ouest (the bidder)
-      expect(etatJeu.joueurActuel, Position.ouest);
-      expect(etatJeu.premierJoueurPli, Position.ouest);
+      // First player should be Sud (right of dealer), not Ouest (the bidder)
+      expect(etatJeu.joueurActuel, Position.sud);
+      expect(etatJeu.premierJoueurPli, Position.sud);
     });
 
-    test('First player with contre and surcontre', () {
+    test('First player is after dealer with contre and surcontre', () {
       // Setup: Ouest is dealer, rotation is clockwise
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
@@ -160,12 +160,12 @@ void main() {
       ]);
       etatJeu.commencerJeu();
 
-      // First player should be Nord (the original bidder), not the surcontrer
+      // First player should be Nord (right of dealer), not the original bidder or surcontrer
       expect(etatJeu.joueurActuel, Position.nord);
       expect(etatJeu.premierJoueurPli, Position.nord);
     });
 
-    test('First player with capot bid', () {
+    test('First player is after dealer with capot bid', () {
       // Setup: Sud is dealer, rotation is clockwise
       final parametres = ParametresJeu(
         conditionFin: ConditionFin.points,
@@ -197,7 +197,7 @@ void main() {
       ]);
       etatJeu.commencerJeu();
 
-      // First player should be Ouest (the capot bidder)
+      // First player should be Ouest (right of dealer), even though Ouest is also the capot bidder
       expect(etatJeu.joueurActuel, Position.ouest);
       expect(etatJeu.premierJoueurPli, Position.ouest);
     });
