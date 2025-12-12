@@ -180,17 +180,24 @@ class _EncheresScreenState extends State<EncheresScreen> {
     return valeurMin != null;
   }
 
-  /// Calculate points for a given trump color
-  int _calculerPointsTotaux(EtatJeu etatJeu, Couleur? couleurAtout) {
+  /// Calculate total points in hand for a given trump color
+  int _calculerPointsPourAtout(EtatJeu etatJeu, Couleur couleurAtout) {
     return etatJeu.cartesJoueur.fold(0, (sum, carte) {
-      if (couleurAtout == null) {
-        return sum + carte.pointsNonAtout;
-      } else if (carte.couleur == couleurAtout) {
+      if (carte.couleur == couleurAtout) {
         return sum + carte.pointsAtout;
       } else {
         return sum + carte.pointsNonAtout;
       }
     });
+  }
+
+  /// Calculate points for all trump scenarios (cached for performance)
+  Map<Couleur, int> _calculerTousLesPointsAtout(EtatJeu etatJeu) {
+    final resultat = <Couleur, int>{};
+    for (final couleur in Couleur.values) {
+      resultat[couleur] = _calculerPointsPourAtout(etatJeu, couleur);
+    }
+    return resultat;
   }
 
   /// Calculate points for a specific color in hand
@@ -383,36 +390,45 @@ class _EncheresScreenState extends State<EncheresScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Points en main selon l\'atout:',
+                            'Points en main selon l'atout:',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          for (final couleur in Couleur.values)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    couleur.symbole,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: couleur == Couleur.coeur ||
-                                              couleur == Couleur.carreau
-                                          ? Colors.red
-                                          : Colors.black,
+                          Builder(
+                            builder: (context) {
+                              // Calculate all points once for performance
+                              final pointsParCouleur = _calculerTousLesPointsAtout(etatJeu);
+                              return Column(
+                                children: Couleur.values.map((couleur) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 2),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          couleur.symbole,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: couleur == Couleur.coeur ||
+                                                    couleur == Couleur.carreau
+                                                ? Colors.red
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${pointsParCouleur[couleur]} points',
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${_calculerPointsTotaux(etatJeu, couleur)} points',
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                ],
-                              ),
-                            ),
+                                  );
+                                }).toList(),
+                              );
+                            }
+                          ),
                         ],
                       ),
                     ),
