@@ -451,13 +451,8 @@ class EtatJeu extends ChangeNotifier {
 
   /// Start the game phase
   void commencerJeu() {
-    // The first player is the one who won the bidding (the preneur)
-    final preneur = equipePrenante;
-    if (preneur != null) {
-      _joueurActuel = preneur;
-      _premierJoueurPli = _joueurActuel;
-    } else if (_parametres?.positionDonneur != null) {
-      // Fallback: if no bid was made, start with player to right of dealer
+    // The first player is the one after the dealer (same as first speaker in bidding)
+    if (_parametres?.positionDonneur != null) {
       _joueurActuel = _parametres!.sensRotation == SensRotation.horaire
           ? _parametres!.positionDonneur!.suivant
           : _parametres!.positionDonneur!.precedent;
