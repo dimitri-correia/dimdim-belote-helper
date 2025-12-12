@@ -200,6 +200,11 @@ class _EncheresScreenState extends State<EncheresScreen> {
     return resultat;
   }
 
+  /// Check if a suit is red (hearts or diamonds)
+  bool _isRedSuit(Couleur couleur) {
+    return couleur == Couleur.coeur || couleur == Couleur.carreau;
+  }
+
   /// Calculate points for a specific color in hand
   int _calculerPointsCouleur(EtatJeu etatJeu, Couleur couleur, bool estAtout) {
     return etatJeu.cartesJoueur.where((carte) => carte.couleur == couleur).fold(
@@ -234,9 +239,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                 couleur.symbole,
                 style: TextStyle(
                   fontSize: 18,
-                  color: couleur == Couleur.coeur || couleur == Couleur.carreau
-                      ? Colors.red
-                      : Colors.black,
+                  color: _isRedSuit(couleur) ? Colors.red : Colors.black,
                 ),
               ),
               const SizedBox(width: 8),
@@ -260,10 +263,7 @@ class _EncheresScreenState extends State<EncheresScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: couleur == Couleur.coeur || 
-                                 couleur == Couleur.carreau
-                              ? Colors.red
-                              : Colors.black,
+                          color: _isRedSuit(couleur) ? Colors.red : Colors.black,
                         ),
                       ),
                     );
@@ -397,38 +397,33 @@ class _EncheresScreenState extends State<EncheresScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Builder(
-                            builder: (context) {
-                              // Calculate all points once for performance
-                              final pointsParCouleur = _calculerTousLesPointsAtout(etatJeu);
-                              return Column(
-                                children: Couleur.values.map((couleur) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 2),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          couleur.symbole,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: couleur == Couleur.coeur ||
-                                                    couleur == Couleur.carreau
-                                                ? Colors.red
-                                                : Colors.black,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '${pointsParCouleur[couleur]} points',
-                                          style: const TextStyle(fontSize: 13),
-                                        ),
-                                      ],
+                          ...() {
+                            // Calculate all points once for performance
+                            final pointsParCouleur = _calculerTousLesPointsAtout(etatJeu);
+                            return Couleur.values.map((couleur) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 2),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      couleur.symbole,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: _isRedSuit(couleur)
+                                            ? Colors.red
+                                            : Colors.black,
+                                      ),
                                     ),
-                                  );
-                                }).toList(),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '${pointsParCouleur[couleur]} points',
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ],
+                                ),
                               );
-                            }
-                          ),
+                            });
+                          }(),
                         ],
                       ),
                     ),
